@@ -1,7 +1,7 @@
-/* Lyrics stay inside the hero and scroll away with it. */
-.layout-custom #home > .hero-lyric{position:absolute;left:max(10px,env(safe-area-inset-left));top:24%;bottom:auto;width:clamp(130px,15vw,205px);max-width:17vw;min-height:0;margin:0;padding:0;border:0!important;border-radius:0;background:none!important;box-shadow:none!important;pointer-events:none;z-index:1;font-size:clamp(17px,1.7vw,23px);line-height:1.5;text-align:left;opacity:0}
-.layout-custom #home > .hero-lyric.show{animation:subtleLyric var(--line-duration,4s) ease-in-out both}
-@keyframes subtleLyric{0%,100%{opacity:0;transform:translateY(6px)}15%,78%{opacity:.38;transform:translateY(0)}}
+/* Borderless sung lines pop into free spaces within the hero only. */
+.layout-custom #home > .hero-lyric{position:absolute;left:16px;top:16px;bottom:auto;width:225px;max-width:none;min-height:0;margin:0;padding:0;border:0!important;border-radius:0;background:none!important;box-shadow:none!important;pointer-events:none;z-index:1;font-size:clamp(18px,1.6vw,25px);line-height:1.55;text-align:center;opacity:0;transform-origin:center}
+.layout-custom #home > .hero-lyric.show{animation:lyricPop var(--line-duration,4s) ease-out both}
+@keyframes lyricPop{0%,100%{opacity:0;transform:translateY(8px) scale(.86)}8%{opacity:.42;transform:translateY(0) scale(1.035)}15%,82%{opacity:.42;transform:translateY(0) scale(1)}}
 body:has(.overlay.open) .hero-lyric,body:has(input:focus,textarea:focus,select:focus) .hero-lyric{visibility:hidden}
-@media(max-width:800px){.layout-custom #home > .hero-lyric{top:auto;bottom:20px;left:12px;width:125px;max-width:33vw;font-size:15px;line-height:1.5}.layout-custom #home > .hero-lyric.show{animation-name:subtleMobileLyric}@keyframes subtleMobileLyric{0%,100%{opacity:0;transform:translateY(6px)}15%,78%{opacity:.27;transform:translateY(0)}}}
-@media(prefers-reduced-motion:reduce){.layout-custom #home > .hero-lyric.show{animation:none;opacity:.3;transform:none}}
+@media(max-width:700px){.layout-custom #home > .hero-lyric{font-size:15px;line-height:1.5}}
+@media(prefers-reduced-motion:reduce){.layout-custom #home > .hero-lyric.show{animation:none;opacity:.35;transform:none}}
