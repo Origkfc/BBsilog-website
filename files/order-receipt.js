@@ -1,23 +1,38 @@
 (async()=>{
  const Q=BBSILOGQR,params=new URLSearchParams(location.search),status=document.getElementById('receiptStatus');
- document.getElementById('saveQR').onclick=()=>Q.download(document.getElementById('receiptQR')).catch(e=>status.textContent=e.message);
- try{
-  const raw=params.get('order')||params.get('voucher'),code=Q.parse(raw||'');
-  if(params.has('voucher')){
-   Q.qr(document.getElementById('receiptQR'),Q.link(code,'voucher'));
-   status.textContent='5% review voucher · Staff will verify availability, expiry, and whether it has been used.';
-   const input=Q.node('input');input.readOnly=true;input.value=code;document.getElementById('receiptDetails').append(input);
-   return;
-  }
-  const order=await Q.api('bbsilog_order_receipt',{p_token:code});
-  status.textContent=order.status==='completed'?'QR code has been used · Completed order':order.status==='cancelled'?'Order cancelled':'Order saved · Awaiting staff confirmation';
-  Q.qr(document.getElementById('receiptQR'),Q.link(code));Q.details(document.getElementById('receiptDetails'),order);
-  if(order.status==='completed'&&!order.review_id){const a=document.getElementById('reviewOrder');a.hidden=false;a.href='/?review_order='+encodeURIComponent(code)+'#feedback'}
-  if(order.reward){
-   const host=document.getElementById('receiptDetails');
-   host.append(Q.node('h2','Your 5% review voucher'));
-   const qr=Q.node('div',undefined,'qr-image');Q.qr(qr,Q.link(order.reward,'voucher'));host.append(qr);
-   host.append(Q.node('p','Single use. Staff will verify its current status.'));
-  }
- }catch(e){status.textContent=e.message;status.className='qr-error';document.getElementById('printQR').hidden=true}
+ const host=document.getElementById('receiptQR'),save=document.getElementById('saveQR'),print=document.getElementById('printQR');
+ let code,kind=params.has('voucher')?'voucher':'order',valid=false,busy=false;
+ const refresh=Q.node('button','Check QR status');refresh.type='button';host.before(refresh);
+ const notice=Q.node('p','Validity is checked with BBSILOG. Back / Revise or a replacement checkout invalidates an old order QR. A screenshot alone does not guarantee a discount.','note');host.before(notice);
+ const review=document.getElementById('reviewOrder');
+ async function update(){
+  if(busy||!code)return;busy=true;save.disabled=true;print.disabled=true;refresh.disabled=true;
+  try{
+   const result=await Q.api('bbsilog_qr_status',{p_code:code});valid=result.valid;
+   status.textContent=result.message+' · Last checked '+new Date().toLocaleTimeString('en-PH',{timeZone:'Asia/Manila'});
+   status.className=valid?'qr-valid':'qr-error';
+   host.hidden=!valid;
+   if(valid)Q.qr(host,Q.link(code,kind));
+   review.hidden=true;
+   const details=document.getElementById('receiptDetails');details.replaceChildren();
+   if(kind==='order'){
+    const order=await Q.api('bbsilog_order_receipt',{p_token:code});Q.details(details,order);
+    if(order.status==='completed'&&!order.review_id){review.hidden=false;review.textContent='Leave review · Up to one 5% voucher per mobile number today';review.href='/?review_order='+encodeURIComponent(code)+'#feedback'}
+    if(order.reward){
+     details.append(Q.node('h2','Your 5% review voucher'));
+     const link=Q.node('a','View voucher QR and current status');link.href=Q.link(order.reward,'voucher');details.append(link);
+    }else if(order.review_id)details.append(Q.node('p','Your review was saved. The daily reward limit may apply; no extra voucher was issued for this order.'));
+   }else{
+    const input=Q.node('input');input.readOnly=true;input.value=code;input.setAttribute('aria-label','Voucher code');details.append(input,Q.node('p','One 5% reward per mobile number per Philippine day. Voucher: single use, 30 days, same mobile number; replaces the 3% website discount.'));
+    if(result.expires_at)details.append(Q.node('p','Expires: '+new Date(result.expires_at).toLocaleDateString('en-PH',{timeZone:'Asia/Manila'})));
+   }
+  }catch(e){valid=false;host.hidden=true;status.textContent='Status unverified: '+e.message+' Connect to the internet and check again before sending this QR.';status.className='qr-error'}
+  finally{busy=false;save.disabled=!valid;print.disabled=!valid;refresh.disabled=false}
+ }
+ try{code=Q.parse(params.get('order')||params.get('voucher')||'')}catch(e){status.textContent=e.message;save.hidden=true;print.hidden=true;refresh.hidden=true;return}
+ refresh.onclick=update;
+ save.onclick=async()=>{await update();if(valid)Q.download(host).catch(e=>status.textContent=e.message)};
+ print.onclick=async()=>{await update();if(valid)window.print()};
+ await update();setInterval(()=>{if(!document.hidden)update()},10000);
+ document.addEventListener('visibilitychange',()=>{if(!document.hidden)update()});
 })();

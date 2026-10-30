@@ -1,0 +1,32 @@
+BEGIN;
+DO $test$
+DECLARE req jsonb; a jsonb; b jsonb; c jsonb; d jsonb; result jsonb; admin_id uuid; review_count int;
+BEGIN
+ req:=jsonb_build_object('request_id',gen_random_uuid(),'checkout_id',gen_random_uuid(),'name','QR Revision Regression','phone','09123456789','fulfillment','Pickup','payment','Cash','items',jsonb_build_array(jsonb_build_object('name','Mixsilog','qty',1)));
+ a:=public.bbsilog_create_order(req);
+ req:=jsonb_set(req,'{request_id}',to_jsonb(gen_random_uuid()))||'{"notes":"Revised order"}'::jsonb;
+ b:=public.bbsilog_create_order(req);
+ IF (public.bbsilog_qr_status((a->>'token')::uuid)->>'valid')::boolean THEN RAISE EXCEPTION 'Old QR still valid after replacement'; END IF;
+ IF NOT (public.bbsilog_qr_status((b->>'token')::uuid)->>'valid')::boolean THEN RAISE EXCEPTION 'New QR not valid'; END IF;
+ IF (SELECT count(*) FROM bbsilog_private.web_orders WHERE checkout_id=(req->>'checkout_id')::uuid AND status='pending')<>1 THEN RAISE EXCEPTION 'Multiple pending checkout QRs'; END IF;
+ PERFORM public.bbsilog_cancel_order_qr((b->>'token')::uuid);
+ IF (public.bbsilog_qr_status((b->>'token')::uuid)->>'valid')::boolean THEN RAISE EXCEPTION 'Back did not invalidate QR'; END IF;
+ BEGIN PERFORM public.bbsilog_create_order(req);RAISE EXCEPTION 'Test revived cancelled QR';EXCEPTION WHEN OTHERS THEN IF SQLERRM='Test revived cancelled QR' THEN RAISE; END IF;END;
+ req:=jsonb_set(req,'{request_id}',to_jsonb(gen_random_uuid()));c:=public.bbsilog_create_order(req);
+ IF public.bbsilog_order_receipt((c->>'token')::uuid) ? 'checkout_id' THEN RAISE EXCEPTION 'Checkout secret exposed in receipt'; END IF;
+ SELECT user_id INTO admin_id FROM bbsilog_private.feedback_admins LIMIT 1;
+ PERFORM set_config('request.jwt.claim.sub',admin_id::text,true);
+ BEGIN PERFORM public.bbsilog_admin_qr(a->>'token','complete');RAISE EXCEPTION 'Test completed invalid old QR';EXCEPTION WHEN OTHERS THEN IF SQLERRM='Test completed invalid old QR' THEN RAISE; END IF;END;
+ PERFORM public.bbsilog_admin_qr(c->>'token','complete');
+ result:=public.bbsilog_submit_order_review((c->>'token')::uuid,'{"rating":1,"message":"First honest review","publish_consent":false}');
+ IF NOT (result->>'eligible')::boolean OR result->>'voucher' IS NULL THEN RAISE EXCEPTION 'First daily reward missing'; END IF;
+ req:=jsonb_set(req,'{request_id}',to_jsonb(gen_random_uuid()));d:=public.bbsilog_create_order(req);
+ PERFORM public.bbsilog_admin_qr(d->>'token','complete');
+ result:=public.bbsilog_submit_order_review((d->>'token')::uuid,'{"rating":5,"message":"Second completed purchase review","publish_consent":false}');
+ IF (result->>'eligible')::boolean OR result->>'voucher' IS NOT NULL THEN RAISE EXCEPTION 'Daily reward bypassed'; END IF;
+ IF (SELECT count(*) FROM bbsilog_private.review_vouchers WHERE phone='09123456789' AND (created_at AT TIME ZONE 'Asia/Manila')::date=(now() AT TIME ZONE 'Asia/Manila')::date)<>1 THEN RAISE EXCEPTION 'Daily voucher count incorrect'; END IF;
+ IF (public.bbsilog_order_receipt((d->>'token')::uuid)->>'review_id') IS NULL THEN RAISE EXCEPTION 'Second review was not saved'; END IF;
+ IF public.bbsilog_qr_status((c->>'token')::uuid)->>'status'<>'used' THEN RAISE EXCEPTION 'Completed order not marked used'; END IF;
+END $test$;
+ROLLBACK;
+SELECT 'PASS: one active checkout QR, old QR invalidation, Back cancellation, cancelled QR cannot revive or complete, checkout secret hidden, one 5% reward per phone/Philippine day, extra reviews saved, completed QR status. Test data rolled back.' AS result;

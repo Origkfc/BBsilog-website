@@ -25,7 +25,7 @@
    for(const order of rows){
     const card=Q.node('article',undefined,'review');
     card.append(Q.node('h3',order.code+' · '+order.discount_rate+'% · '+order.status),Q.node('p',order.customer_name+' · '+order.phone),Q.node('p',new Date(order.completed_at||order.created_at).toLocaleString()),Q.node('p',(order.status==='completed'?'Final total: ':'Known food subtotal: ')+Q.money(order.final_total??order.subtotal)));
-    const button=Q.node('button',order.status==='pending'?'Verify / complete':'View used QR record');button.onclick=()=>{tab('scan');verify(order.token)};card.append(button);host.append(card);
+    const button=Q.node('button',order.status==='pending'?'Verify / complete':'View archived QR record');button.onclick=()=>{tab('scan');verify(order.token)};card.append(button);if(order.invalidated_reason)card.append(Q.node('p','Invalid QR: '+order.invalidated_reason,'qr-error'));host.append(card);
    }
   }catch(e){host.textContent=e.message}
  }
