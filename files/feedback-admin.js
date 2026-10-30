@@ -115,9 +115,21 @@ function render() {
       const photo = document.createElement('img');
       photo.className = 'admin-review-photo ' + (row.photo_layout === 'groupie' ? 'groupie' : 'selfie');
       photo.alt = row.photo_layout === 'groupie' ? 'Customer group photo' : 'Customer selfie';
-      photo.loading = 'lazy';
+      photo.hidden = true;
       card.append(photo);
-      signReviewPhoto(row.photo_path).then(url => { if (url && photo.isConnected) photo.src = url; });
+      loadReviewPhoto(row.photo_path).then(url => {
+        if (!photo.isConnected) { URL.revokeObjectURL(url); return; }
+        photo.onload = () => URL.revokeObjectURL(url);
+        photo.onerror = () => URL.revokeObjectURL(url);
+        photo.src = url;
+        photo.hidden = false;
+      }).catch(() => {
+        if (!photo.isConnected) return;
+        const unavailable = document.createElement('p');
+        unavailable.className = 'admin-photo-unavailable';
+        unavailable.textContent = 'Customer photo could not be loaded. Refresh the inbox to try again.';
+        photo.replaceWith(unavailable);
+      });
     }
     card.append(rating, message, detail);
     if (model.mayFeature(row) && !row.archived_at) {
@@ -145,12 +157,15 @@ async function load() {
     say('');
   } catch (error) { say(error.message, true); }
 }
-async function signReviewPhoto(path) {
-  const result = await request('/storage/v1/object/sign/' + photoBucket + '/' + path, {
-    method: 'POST', body: JSON.stringify({ expiresIn: 3600 })
+async function loadReviewPhoto(path) {
+  const encodedPath = path.split('/').map(encodeURIComponent).join('/');
+  const response = await fetch(base + '/storage/v1/object/' + photoBucket + '/' + encodedPath, {
+    headers: { apikey: key, Authorization: 'Bearer ' + (token || key) }
   });
-  const url = result.signedURL || result.signedUrl;
-  return url ? (url.startsWith('http') ? url : base + url) : null;
+  if (!response.ok) throw Error('Photo request failed (' + response.status + ').');
+  const blob = await response.blob();
+  if (!blob.type.startsWith('image/')) throw Error('Photo response was not an image.');
+  return URL.createObjectURL(blob);
 }
 function showInbox() {
   document.getElementById('login').hidden = true;
