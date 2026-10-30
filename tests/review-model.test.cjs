@@ -23,4 +23,8 @@ assert.equal(model.matchesFilter(privateWebsite, 'private'), true);
 assert.equal(model.matchesFilter(privateWebsite, 'pending'), false);
 assert.equal(model.ratingLabel(privateWebsite), '★★★★');
 assert.equal(model.mayFeature({ ...imported, owner_publication_approved: false }), false);
+assert.equal(model.avatarPath({ avatar_path: '/files/review-avatars/review-stephanie.webp' }), '/files/review-avatars/review-stephanie.webp');
+assert.equal(model.avatarPath({ avatar_path: 'https://another-site.example/portrait.webp' }), null);
+assert.equal(model.avatarPath({ avatar_path: '/files/review-avatars/../../private.webp' }), null);
+assert.ok(parseFloat(model.reviewDuration(8)) >= 80, 'Eight reviews need at least ten seconds per card in the marquee loop.');
 console.log('Review model: unrated imports, consent, moderation, archive, and restore checks passed.');

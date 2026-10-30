@@ -92,6 +92,18 @@ The current feedback client and admin page use the Supabase project URL and publ
 
 Before launch, confirm outstanding menu prices, supply the GCash QR code, and verify the complete ordering and feedback flows on a phone. Music playback may require a visitor's tap depending on browser autoplay rules.
 
+Music defaults to enabled on each visit. If autoplay is blocked, the first tap starts it; Sound Off keeps it muted for the rest of that visit. Lyrics follow the viewport at reduced opacity and hide while a dialog or form field is active.
+
+## Customer review imports
+
+Eight owner-supplied Messenger reviews are featured alongside website feedback. Their original profile photos are exact, lossless crops in `files/review-avatars/`; no AI editing is used. Unknown customer names remain anonymous. These screenshots do not contain star ratings, so the imported rating remains empty.
+
+For a fresh database with the existing feedback/admin schema installed, run `database/enable-messenger-reviews.sql`, then `database/import-messenger-reviews.sql`, then `database/enable-review-avatars.sql`. The import is idempotent and does not re-feature records an admin later removes. Owner publication approval is recorded separately from customer consent. Browser users cannot set import provenance or owner approval.
+
+In Feedback Admin, **Messenger imports** shows the imported records; **Approved** shows featured records. Archiving removes a review from the website; restoring returns it to Pending for reapproval. `database/verify-review-moderation.sql` checks these transitions using the actual admin and anonymous roles, and rolls back all test changes.
+
+Run focused checks with `node --test tests/review-model.test.cjs tests/music-controller.test.cjs`. Database scripts and tests are excluded from the public Vercel deployment.
+
 ## BBSILOG
 
 - **Address:** Silanganan St., Brgy. 26, Pajo, Caloocan City

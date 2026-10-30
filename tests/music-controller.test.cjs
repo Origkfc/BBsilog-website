@@ -1,0 +1,20 @@
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const vm=require('node:vm');
+const context={window:{}};
+vm.runInNewContext(fs.readFileSync('files/music-controller.js','utf8'),context);
+const tick=()=>new Promise(resolve=>setImmediate(resolve));
+(async()=>{
+ let attempts=0,blocked=true,beats=0;
+ const audio={paused:true,play(){attempts++;if(blocked)return Promise.reject(Error('autoplay blocked'));this.paused=false;return Promise.resolve()},pause(){this.paused=true}};
+ const button={textContent:'',setAttribute(){}};
+ const make=()=>context.window.createBBSILOGMusicController(audio,button,()=>{beats++});
+ const controller=make();await tick();
+ assert.equal(attempts,1);assert.match(button.textContent,/Sound: On.*Tap to start/);
+ blocked=false;controller.interact({target:{closest(){return null}}});await tick();
+ assert.equal(audio.paused,false);assert.equal(beats,1);
+ controller.toggle();assert.equal(audio.paused,true);assert.match(button.textContent,/Sound: Off/);
+ controller.interact({target:{closest(){return null}}});await tick();assert.equal(attempts,2);
+ make();await tick();assert.equal(audio.paused,false);assert.match(button.textContent,/Sound: On/);
+ console.log('Music: autoplay attempt, tap fallback, explicit mute, and fresh-visit reset passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});

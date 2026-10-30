@@ -52,8 +52,9 @@ function render() {
   for (const row of rows) {
     const card = document.createElement('article');
     card.className = 'review';
-    const title = document.createElement('strong');
-    title.textContent = (row.customer_name || 'BBSILOG customer') + ' · ' + model.ratingLabel(row);
+    const title = model.identityElement(row);
+    const rating = document.createElement('span');
+    rating.className = 'review-rating'; rating.textContent = model.ratingLabel(row);
     const message = document.createElement('p');
     message.textContent = row.message;
     const detail = document.createElement('small');
@@ -62,7 +63,7 @@ function render() {
       : (row.publish_consent ? 'Website feedback · Customer permission: Yes' : 'Private website feedback · No permission to feature');
     detail.textContent = publication + ' · ' + (row.archived_at ? 'archived' : row.status) + ' · ' + (model.isImported(row) ? 'Imported: ' : 'Submitted: ') + new Date(row.created_at).toLocaleString();
     if (row.source_reference) detail.title = row.source_reference;
-    card.append(title, message, detail);
+    card.append(title, rating, message, detail);
     if (model.mayFeature(row) && !row.archived_at) {
       for (const [label, state] of [['Approve & feature', 'approved'], ['Remove from website', 'rejected']]) {
         const button = document.createElement('button');
@@ -83,7 +84,7 @@ function render() {
 async function load() {
   say('Loading feedback…');
   try {
-    feedbackRows = await request('/rest/v1/bbsilog_feedback?select=id,customer_name,rating,message,publish_consent,status,created_at,archived_at,source,source_reference,owner_publication_approved&order=created_at.desc,id.desc');
+    feedbackRows = await request('/rest/v1/bbsilog_feedback?select=id,customer_name,rating,message,publish_consent,status,created_at,archived_at,source,source_reference,owner_publication_approved,avatar_path&order=created_at.desc,id.desc');
     render();
     say('');
   } catch (error) { say(error.message, true); }

@@ -1,0 +1,10 @@
+.review-identity{display:flex;align-items:center;gap:12px;min-width:0;margin:0 0 10px;text-align:left}
+.review-identity b{margin:0!important;overflow-wrap:anywhere}
+img.review-avatar{display:block;width:48px!important;height:48px!important;max-width:none;flex:0 0 48px;border-radius:50%;object-fit:cover;border:2px solid #fff4d4;background:#fff4d4;box-shadow:0 2px 7px #582d0b22}
+.review-card .review-identity b{font-size:15px}
+#publicReviews .review-card .stars{font-size:12px;line-height:1.5;letter-spacing:0;color:#72543a}
+.review .review-rating{display:block;font-size:13px;line-height:1.5;color:#72543a;margin-bottom:10px}
+.hero-glass-reviews .hero-glass-track,#publicReviews .review-track{animation-duration:var(--reviews-duration,96s)!important;animation-play-state:running!important}
+.ticker .ticker-track{animation-duration:42s!important}
+.review-status{font-size:14px;line-height:1.6}
+@media(prefers-reduced-motion:reduce){.hero-glass-reviews .hero-glass-track,#publicReviews .review-track,.ticker .ticker-track{animation:none!important}}
