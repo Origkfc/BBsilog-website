@@ -1,6 +1,7 @@
 'use strict';
 const base = 'https://ufhblydcgwffwpwdlksm.supabase.co';
 const key = 'sb_publishable_d10Qrzk0LHaoVYnttjtOyQ_g-049cX3';
+const photoBucket = 'bbsilog-feedback-photos';
 const model = BBSILOGReviewModel;
 let token = sessionStorage.getItem('bbsilog_feedback_token') || null;
 let feedbackRows = [];
@@ -18,7 +19,7 @@ async function request(path, options = {}) {
   if (!response.ok) throw Error('Request failed (' + response.status + '). Check project setup or admin access.');
   return response.status === 204 ? null : response.json();
 }
-async function updateFeedback(row, patch, button) {
+async function updateFeedback(row, patch, button, successMessage = '') {
   button.disabled = true;
   try {
     const updated = await request('/rest/v1/bbsilog_feedback?id=eq.' + encodeURIComponent(row.id), {
@@ -26,6 +27,7 @@ async function updateFeedback(row, patch, button) {
     });
     if (!Array.isArray(updated) || updated.length !== 1) throw Error('Could not update this feedback.');
     await load();
+    if (successMessage) say(successMessage);
   } catch (error) {
     say(error.message, true);
     button.disabled = false;
@@ -53,6 +55,51 @@ function render() {
     const card = document.createElement('article');
     card.className = 'review';
     const title = model.identityElement(row);
+    const nameLabel = title.querySelector('b');
+    const editName = document.createElement('button');
+    editName.type = 'button';
+    editName.className = 'edit-name-button';
+    editName.textContent = '✎';
+    editName.title = 'Edit customer name';
+    editName.setAttribute('aria-label', 'Edit customer name');
+    const nameEditor = document.createElement('form');
+    nameEditor.className = 'name-editor';
+    nameEditor.hidden = true;
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.maxLength = 80;
+    nameInput.autocomplete = 'off';
+    nameInput.setAttribute('aria-label', 'Customer name');
+    nameInput.value = row.customer_name || '';
+    const saveName = document.createElement('button');
+    saveName.type = 'submit';
+    saveName.textContent = 'Save name';
+    const cancelName = document.createElement('button');
+    cancelName.type = 'button';
+    cancelName.className = 'secondary';
+    cancelName.textContent = 'Cancel';
+    editName.addEventListener('click', () => {
+      nameInput.value = row.customer_name || '';
+      nameEditor.hidden = false;
+      editName.hidden = true;
+      nameInput.focus();
+      nameInput.select();
+    });
+    cancelName.addEventListener('click', () => {
+      nameEditor.hidden = true;
+      editName.hidden = false;
+    });
+    nameEditor.addEventListener('submit', event => {
+      event.preventDefault();
+      const customerName = nameInput.value.trim();
+      if (customerName.length > 80) {
+        say('Customer name must be 80 characters or fewer.', true);
+        return;
+      }
+      updateFeedback(row, { customer_name: customerName || null }, saveName, 'Customer name updated. The public review will show the new name.');
+    });
+    title.append(editName);
+    nameEditor.append(nameInput, saveName, cancelName);
     const rating = document.createElement('span');
     rating.className = 'review-rating'; rating.textContent = model.ratingLabel(row);
     const message = document.createElement('p');
@@ -63,7 +110,16 @@ function render() {
       : (row.publish_consent ? 'Website feedback · Customer permission: Yes' : 'Private website feedback · No permission to feature');
     detail.textContent = publication + ' · ' + (row.archived_at ? 'archived' : row.status) + ' · ' + (model.isImported(row) ? 'Imported: ' : 'Submitted: ') + new Date(row.created_at).toLocaleString();
     if (row.source_reference) detail.title = row.source_reference;
-    card.append(title, rating, message, detail);
+    card.append(title, nameEditor);
+    if (row.photo_path) {
+      const photo = document.createElement('img');
+      photo.className = 'admin-review-photo ' + (row.photo_layout === 'groupie' ? 'groupie' : 'selfie');
+      photo.alt = row.photo_layout === 'groupie' ? 'Customer group photo' : 'Customer selfie';
+      photo.loading = 'lazy';
+      card.append(photo);
+      signReviewPhoto(row.photo_path).then(url => { if (url && photo.isConnected) photo.src = url; });
+    }
+    card.append(rating, message, detail);
     if (model.mayFeature(row) && !row.archived_at) {
       for (const [label, state] of [['Approve & feature', 'approved'], ['Remove from website', 'rejected']]) {
         const button = document.createElement('button');
@@ -84,10 +140,17 @@ function render() {
 async function load() {
   say('Loading feedback…');
   try {
-    feedbackRows = await request('/rest/v1/bbsilog_feedback?select=id,customer_name,rating,message,publish_consent,status,created_at,archived_at,source,source_reference,owner_publication_approved,avatar_path&order=created_at.desc,id.desc');
+    feedbackRows = await request('/rest/v1/bbsilog_feedback?select=id,customer_name,rating,message,publish_consent,status,created_at,archived_at,source,source_reference,owner_publication_approved,avatar_path,photo_path,photo_layout,photo_consent&order=created_at.desc,id.desc');
     render();
     say('');
   } catch (error) { say(error.message, true); }
+}
+async function signReviewPhoto(path) {
+  const result = await request('/storage/v1/object/sign/' + photoBucket + '/' + path, {
+    method: 'POST', body: JSON.stringify({ expiresIn: 3600 })
+  });
+  const url = result.signedURL || result.signedUrl;
+  return url ? (url.startsWith('http') ? url : base + url) : null;
 }
 function showInbox() {
   document.getElementById('login').hidden = true;
