@@ -1,0 +1,32 @@
+BEGIN;
+DO $test$
+DECLARE req jsonb; a jsonb; b jsonb; c jsonb; voucher_code text; result jsonb; admin_id uuid;
+BEGIN
+ req:=jsonb_build_object('request_id',gen_random_uuid(),'name','QR Regression Test','phone','09123456789','fulfillment','Pickup','payment','Cash','items',jsonb_build_array(jsonb_build_object('name','Mixsilog','qty',1,'price',1)));
+ a:=public.bbsilog_create_order(req);
+ IF (a->>'subtotal')::numeric<>120 OR (a->>'discount_rate')::int<>3 THEN RAISE EXCEPTION 'Server pricing/3 percent failed'; END IF;
+ IF public.bbsilog_create_order(req)->>'token'<>a->>'token' THEN RAISE EXCEPTION 'Idempotency failed'; END IF;
+ BEGIN PERFORM public.bbsilog_submit_order_review((a->>'token')::uuid,'{"rating":5,"message":"Test"}'); RAISE EXCEPTION 'Test accepted premature reward'; EXCEPTION WHEN OTHERS THEN IF SQLERRM='Test accepted premature reward' THEN RAISE; END IF; END;
+ SELECT user_id INTO admin_id FROM bbsilog_private.feedback_admins LIMIT 1;
+ PERFORM set_config('request.jwt.claim.sub',admin_id::text,true);
+ result:=public.bbsilog_admin_qr(a->>'token','complete');
+ IF (result->'data'->>'final_total')::numeric<>116.4 THEN RAISE EXCEPTION '3 percent calculation failed'; END IF;
+ result:=public.bbsilog_admin_qr(a->>'token','complete');
+ IF result->>'error'<>'QR code has been used' THEN RAISE EXCEPTION 'QR replay accepted'; END IF;
+ result:=public.bbsilog_submit_order_review((a->>'token')::uuid,'{"rating":1,"message":"Private honest test","publish_consent":false}');
+ voucher_code:=result->>'voucher';
+ BEGIN PERFORM public.bbsilog_submit_order_review((a->>'token')::uuid,'{"rating":5,"message":"Duplicate"}'); RAISE EXCEPTION 'Test duplicate reward accepted'; EXCEPTION WHEN OTHERS THEN IF SQLERRM='Test duplicate reward accepted' THEN RAISE; END IF; END;
+ req:=jsonb_set(req,'{request_id}',to_jsonb(gen_random_uuid()))||jsonb_build_object('voucher',voucher_code);
+ b:=public.bbsilog_create_order(req);
+ req:=jsonb_set(req,'{request_id}',to_jsonb(gen_random_uuid()));c:=public.bbsilog_create_order(req);
+ IF (b->>'discount_rate')::int<>5 THEN RAISE EXCEPTION '5 percent voucher failed'; END IF;
+ result:=public.bbsilog_admin_qr(b->>'token','complete');
+ IF (result->'data'->>'final_total')::numeric<>114 THEN RAISE EXCEPTION '5 percent calculation failed'; END IF;
+ BEGIN PERFORM public.bbsilog_admin_qr(c->>'token','complete');RAISE EXCEPTION 'Test voucher replay accepted'; EXCEPTION WHEN OTHERS THEN IF SQLERRM='Test voucher replay accepted' THEN RAISE; END IF; END;
+ result:=public.bbsilog_admin_qr(voucher_code);
+ IF result->>'error'<>'QR code has been used' THEN RAISE EXCEPTION 'Used voucher not rejected'; END IF;
+ result:=public.bbsilog_admin_orders('archives');
+ IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(result->'orders') v WHERE v->>'token'=b->>'token') THEN RAISE EXCEPTION 'Archive missing'; END IF;
+END $test$;
+ROLLBACK;
+SELECT 'PASS: canonical prices, 3%/5%, idempotency, completed-only review rewards, honest private review, single-use order and voucher QR, archives. Test data rolled back.' AS result;

@@ -17,3 +17,7 @@ img.review-avatar{display:block;width:48px!important;height:48px!important;max-w
 .glass-review.has-groupie{width:480px!important;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px 16px;align-items:center}
 .glass-review.has-groupie>.customer-review-photo.groupie{grid-column:1;grid-row:1 / span 3;display:block;width:100%;height:170px;border-radius:12px;object-fit:cover}
 .glass-review.has-groupie>.review-identity,.glass-review.has-groupie>p,.glass-review.has-groupie>small{grid-column:2;min-width:0}
+.review-scroll-window{width:100%;overflow-x:auto;overflow-y:hidden;scrollbar-width:auto;scrollbar-color:#ffbf1e #5a3017;padding:12px 0 17px;overscroll-behavior-x:contain;touch-action:pan-x pan-y}
+.review-scroll-window::-webkit-scrollbar{height:12px}.review-scroll-window::-webkit-scrollbar-track{background:#5a3017}.review-scroll-window::-webkit-scrollbar-thumb{background:#ffbf1e;border-radius:10px;border:2px solid #5a3017}
+html body .hero-glass-reviews .review-scroll-window>.hero-glass-track{animation:none!important;transform:none!important}
+.review-scroll-controls{display:flex;justify-content:center;gap:15px;align-items:center;margin:10px 15px 0;color:#ffe38b}.review-scroll-controls button{border:1px solid #ffcf52;background:#ffcf52;color:#35180b;border-radius:20px;padding:9px 15px;cursor:pointer;font-weight:700}

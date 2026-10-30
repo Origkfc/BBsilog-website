@@ -110,3 +110,13 @@ Run focused checks with `node --test tests/review-model.test.cjs tests/music-con
 - **Hours:** Daily, 6 PM–3 AM
 - **Facebook and orders:** [BBSILOG Tapsilogan](https://www.facebook.com/bbsilog.tapsilogan)
 - **Messenger:** [Message BBSILOG](https://m.me/bbsilog.tapsilogan)
+
+### Order QR and review discounts
+
+Customers confirm a website order to create a saved, server-priced order and private receipt QR. The food discount is 3%. A review of a completed, paid/fulfilled order issues one 5% voucher for a subsequent order; any rating qualifies and publication is optional. The voucher replaces 3%, expires in 30 days, and is tied to the same mobile number. Delivery fees are not discounted. Food packs remain inquiry-only.
+
+Use the existing admin at /files/feedback-admin.html: Orders, Scan / Verify QR, and Used QR / Archives. Camera scanning, QR screenshot upload, and manual code entry are available. Verification does not redeem a QR. Staff must confirm payment/fulfillment and explicitly complete/redeem it. Database row locks prevent duplicate redemptions, including two orders trying to use the same voucher. Completed records and counts remain in archives.
+
+Private tables and public/admin RPCs are installed by database/website-qr-orders.sql. The server catalog is intentionally authoritative: update bbsilog_private.order_catalog when changing menu prices or names in index.html. Unknown prices require a staff-confirmed amount at completion. QR verification does not verify GCash payments automatically.
+
+QR URLs contain a private receipt capability. Keep them between the customer and staff. QR libraries are bundled locally under files/vendor; no third-party QR-generation service receives order data.
