@@ -17,13 +17,14 @@
  document.getElementById('photoFile')?.addEventListener('change',async event=>{const file=event.target.files?.[0];if(!file)return;if(!file.type.startsWith('image/')){note('Choose an image file.');return;}try{setPhoto(await toWebp(file));}catch{note('Could not prepare the selected photo. Try another image.');}event.target.value='';});
  document.getElementById('removePhoto')?.addEventListener('click',()=>setPhoto(null));
  document.querySelectorAll('input[name="photoLayout"]').forEach(input=>input.addEventListener('change',()=>{if(capturedPhoto)setPhoto(capturedPhoto);if(cameraStream)document.getElementById('openCamera').click();}));
- async function signPhoto(path){if(!path)return null;const res=await fetch(base+'/storage/v1/object/sign/'+bucket+'/'+path,{method:'POST',headers,body:JSON.stringify({expiresIn:604800})});if(!res.ok)return null;const data=await res.json();const url=data.signedURL||data.signedUrl;if(!url)return null;return url.startsWith('http')?url:base+url;}
+ async function signPhoto(path){if(!path)return null;const res=await fetch(base+'/storage/v1/object/sign/'+bucket+'/'+path,{method:'POST',headers,body:JSON.stringify({expiresIn:604800})});if(!res.ok)return null;const data=await res.json();const url=data.signedURL||data.signedUrl;if(!url)return null;return url.startsWith('http')?url:base+(url.startsWith('/storage/v1/')?'':'/storage/v1')+url;}
  async function showApproved(){
   try{
-   const res=await fetch(base+'/rest/v1/bbsilog_feedback?select=customer_name,rating,message,created_at,source,avatar_path,photo_path,photo_layout,photo_consent,publish_consent&status=eq.approved&archived_at=is.null&publish_consent=eq.true&order=created_at.desc&limit=30',{headers});
+   // Anonymous SELECT is restricted to approved, publishable, unarchived rows by RLS.
+   const res=await fetch(base+'/rest/v1/bbsilog_feedback?select=customer_name,rating,message,created_at,source,avatar_path,photo_path,photo_layout,photo_consent&order=created_at.desc&limit=30',{headers});
    if(!res.ok)throw Error('reviews unavailable');
    const rows=await res.json();const snapshot=JSON.stringify(rows);if(snapshot===lastReviewsData)return;
-   const reviews=await Promise.all(rows.map(async r=>({name:r.customer_name||'BBSILOG customer',text:r.message,rating:r.rating,source:r.source,avatar_path:r.avatar_path,photo_layout:r.photo_layout,photo_url:r.photo_consent&&r.publish_consent&&r.photo_path?await signPhoto(r.photo_path):null,publicationApproved:true,status:'approved'})));
+   const reviews=await Promise.all(rows.map(async r=>({name:r.customer_name||'BBSILOG customer',text:r.message,rating:r.rating,source:r.source,avatar_path:r.avatar_path,photo_layout:r.photo_layout,photo_url:r.photo_consent&&r.photo_path?await signPhoto(r.photo_path):null,publicationApproved:true,status:'approved'})));
    renderPublicReviews(reviews);
    const noteEl=document.querySelector('#feedback #publicReviews + .demo-note');if(noteEl)noteEl.textContent=reviews.length?'Customer reviews featured by BBSILOG. Messenger imports have no star rating unless one was provided.':'No approved public reviews yet.';
    const strip=document.querySelector('.hero-glass-reviews');if(!strip){lastReviewsData=snapshot;return;}

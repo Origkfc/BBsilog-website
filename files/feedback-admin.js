@@ -118,9 +118,9 @@ function render() {
       photo.hidden = true;
       card.append(photo);
       loadReviewPhoto(row.photo_path).then(url => {
-        if (!photo.isConnected) { URL.revokeObjectURL(url); return; }
-        photo.onload = () => URL.revokeObjectURL(url);
-        photo.onerror = () => URL.revokeObjectURL(url);
+        if (!photo.isConnected) return;
+
+        photo.onerror = () => { photo.alt = 'Customer photo unavailable. Refresh to try again.'; };
         photo.src = url;
         photo.hidden = false;
       }).catch(() => {
@@ -159,13 +159,12 @@ async function load() {
 }
 async function loadReviewPhoto(path) {
   const encodedPath = path.split('/').map(encodeURIComponent).join('/');
-  const response = await fetch(base + '/storage/v1/object/' + photoBucket + '/' + encodedPath, {
-    headers: { apikey: key, Authorization: 'Bearer ' + (token || key) }
+  const data = await request('/storage/v1/object/sign/' + photoBucket + '/' + encodedPath, {
+    method: 'POST', body: JSON.stringify({ expiresIn: 3600 })
   });
-  if (!response.ok) throw Error('Photo request failed (' + response.status + ').');
-  const blob = await response.blob();
-  if (!blob.type.startsWith('image/')) throw Error('Photo response was not an image.');
-  return URL.createObjectURL(blob);
+  const signed = data.signedURL || data.signedUrl;
+  if (!signed) throw Error('Photo URL was unavailable.');
+  return signed.startsWith('http') ? signed : base + (signed.startsWith('/storage/v1/') ? '' : '/storage/v1') + signed;
 }
 function showInbox() {
   document.getElementById('login').hidden = true;
