@@ -36,6 +36,7 @@ The admin page is part of the website at `/files/feedback-admin.html`. Sign in w
 - **Approved** shows featured reviews.
 - **Deleted / Archived** keeps removed feedback recoverable.
 - **Restore feedback** returns an entry to pending; it must be approved again before public display.
+- **Messenger imports** shows owner-approved reviews transcribed from supplied screenshots. These records retain their source reference, use no invented star rating, and can be removed, archived, restored, and approved through the same dashboard. Website visitor consent remains separate from the owner's approval of an imported review.
 
 ## Website files and deployment
 

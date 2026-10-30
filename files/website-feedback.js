@@ -6,18 +6,18 @@
  const stripPlaceholder=document.querySelector('.hero-glass-reviews .hero-glass-track')?.cloneNode(true);
  async function showApproved(){
   try{
-   const res=await fetch(base+'/rest/v1/bbsilog_feedback?select=customer_name,rating,message,created_at&order=created_at.desc&limit=30',{headers});
+   const res=await fetch(base+'/rest/v1/bbsilog_feedback?select=customer_name,rating,message,created_at,source&order=created_at.desc&limit=30',{headers});
    if(!res.ok)throw Error('reviews unavailable');
    const rows=await res.json();
-   const reviews=rows.map(r=>({name:r.customer_name||'BBSILOG customer',text:r.message,rating:r.rating,publishConsent:true,status:'approved'}));
+   const reviews=rows.map(r=>({name:r.customer_name||'BBSILOG customer',text:r.message,rating:r.rating,source:r.source,publicationApproved:true,status:'approved'}));
    renderPublicReviews(reviews);
-   const note=document.querySelector('#feedback #publicReviews + .demo-note');if(note)note.textContent=reviews.length?'Reviews shown with customer permission.':'No approved public reviews yet.';
+   const note=document.querySelector('#feedback #publicReviews + .demo-note');if(note)note.textContent=reviews.length?'Customer reviews featured by BBSILOG. Messenger imports have no star rating unless one was provided.':'No approved public reviews yet.';
    const strip=document.querySelector('.hero-glass-reviews');
    if(!strip)return;
-   const caption=strip.querySelector('.hero-glass-caption');if(caption)caption.textContent=reviews.length?'Customer stories · shared with permission':'Customer stories · awaiting approved reviews';
+   const caption=strip.querySelector('.hero-glass-caption');if(caption)caption.textContent=reviews.length?'Customer stories · From our customers':'Customer stories · awaiting approved reviews';
    if(!reviews.length){if(stripPlaceholder)strip.querySelector('.hero-glass-track')?.replaceWith(stripPlaceholder.cloneNode(true));return;}
    const track=document.createElement('div');track.className='hero-glass-track';const set=document.createElement('div');set.className='hero-glass-set';
-   for(const r of reviews){const card=document.createElement('article');card.className='glass-review';const name=document.createElement('b');name.textContent=r.name;const text=document.createElement('p');text.textContent=r.text;const stars=document.createElement('small');stars.textContent='★'.repeat(r.rating);card.append(name,text,stars);set.append(card)}
+   for(const r of reviews){const card=document.createElement('article');card.className='glass-review';const name=document.createElement('b');name.textContent=r.name;const text=document.createElement('p');text.textContent=r.text;const stars=document.createElement('small');stars.textContent=BBSILOGReviewModel.ratingLabel(r);card.append(name,text,stars);set.append(card)}
    const copy=set.cloneNode(true);copy.setAttribute('aria-hidden','true');track.append(set,copy);strip.querySelector('.hero-glass-track')?.replaceWith(track);
   }catch{ /* Keep the explicit awaiting-reviews placeholder when offline. */ }
  }
