@@ -26,7 +26,7 @@
      const link=Q.node('a','View voucher QR and current status');link.href=Q.link(order.reward,'voucher');details.append(link);
     }else if(order.review_id)details.append(Q.node('p','Your review was saved. The daily reward limit may apply; no extra voucher was issued for this order.'));
    }else{
-    const input=Q.node('input');input.readOnly=true;input.value=code;input.setAttribute('aria-label','Voucher code');details.append(input,Q.node('p','One 5% reward per mobile number per Philippine day. Voucher: single use, 30 days, same mobile number; replaces the 3% website discount.'));
+    const input=Q.node('input');input.readOnly=true;input.value=code;input.setAttribute('aria-label','Voucher code');details.append(input,Q.node('p','One 5% reward per mobile number per Philippine day. Voucher: single use, 30 days, same mobile number; applies to your next order.'));
     if(result.expires_at)details.append(Q.node('p','Expires: '+new Date(result.expires_at).toLocaleDateString('en-PH',{timeZone:'Asia/Manila'})));
    }
   }catch(e){valid=false;host.hidden=true;status.textContent='Status unverified: '+e.message+' Connect to the internet and check again before sending this QR.';status.className='qr-error'}

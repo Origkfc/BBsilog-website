@@ -42,7 +42,7 @@
   const subtotal=order.final_food??order.subtotal;
   const discount=order.discount_amount??Math.round(Number(subtotal)*order.discount_rate)/100;
   host.append(node('p','Food subtotal: '+money(subtotal)+(order.unpriced&&order.final_food===null?' + items to confirm':'')));
-  host.append(node('p',order.discount_rate+'% discount: −'+money(discount)));
+  if(order.discount_rate)host.append(node('p',order.discount_rate+'% discount: −'+money(discount)));else host.append(node('p','No discount applied.'));
   host.append(node('strong',(order.final_total===null||order.final_total===undefined?'Estimated food total: ':'Final total: ')+money(order.final_total??Number(subtotal)-discount)));
   host.append(node('p','Delivery fees are separate. Unpriced items and availability require staff confirmation.','note'));
  }

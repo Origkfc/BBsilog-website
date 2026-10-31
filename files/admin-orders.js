@@ -16,7 +16,7 @@
   const host=document.getElementById('ordersList');host.textContent='Loading…';
   try{
    const data=await Q.api('bbsilog_admin_orders',{p_view:view},true);
-   document.getElementById('orderStats').textContent='Used 3%: '+data.counts.three+' · Used 5%: '+data.counts.five+' · Total discounts: '+Q.money(data.counts.savings)+' · Pending: '+data.counts.pending;
+   document.getElementById('orderStats').textContent='Completed without discount: '+(data.counts.none||0)+' · Used 5% vouchers: '+data.counts.five+' · Earlier 3% promo: '+data.counts.three+' · Total discounts: '+Q.money(data.counts.savings)+' · Pending: '+data.counts.pending;
    document.getElementById('ordersHeading').textContent=view==='archives'?'Used QR / Archives':'Pending website orders';
    host.replaceChildren();
    const filter=document.getElementById('archiveRate').value;
@@ -24,7 +24,7 @@
    if(!rows.length)host.textContent='No orders in this category.';
    for(const order of rows){
     const card=Q.node('article',undefined,'review');
-    card.append(Q.node('h3',order.code+' · '+order.discount_rate+'% · '+order.status),Q.node('p',order.customer_name+' · '+order.phone),Q.node('p',new Date(order.completed_at||order.created_at).toLocaleString()),Q.node('p',(order.status==='completed'?'Final total: ':'Known food subtotal: ')+Q.money(order.final_total??order.subtotal)));
+    card.append(Q.node('h3',order.code+' · '+(order.discount_rate===0?'No discount':order.discount_rate+'%')+' · '+order.status),Q.node('p',order.customer_name+' · '+order.phone),Q.node('p',new Date(order.completed_at||order.created_at).toLocaleString()),Q.node('p',(order.status==='completed'?'Final total: ':'Known food subtotal: ')+Q.money(order.final_total??order.subtotal)));
     const button=Q.node('button',order.status==='pending'?'Verify / complete':'View archived QR record');button.onclick=()=>{tab('scan');verify(order.token)};card.append(button);if(order.invalidated_reason)card.append(Q.node('p','Invalid QR: '+order.invalidated_reason,'qr-error'));host.append(card);
    }
   }catch(e){host.textContent=e.message}

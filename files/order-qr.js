@@ -9,13 +9,13 @@
  step.querySelector('p').textContent='Save the valid QR image and send it to BBSILOG in Messenger. Back / Revise invalidates the old QR. Staff verifies the saved order before applying a discount.';
  const optionalCopy=step.querySelector('button[onclick="copyOrder()"]');if(optionalCopy)optionalCopy.textContent='Copy order details (optional)';
  const box=Q.node('section',undefined,'qr-panel');box.hidden=true;box.id='savedOrderQR';step.prepend(box);
- const promo=Q.node('p','Website orders get 3% off food. Review a completed order to earn a 5% voucher for your next purchase: maximum ONE voucher per mobile number per Philippine calendar day. Discounts do not stack.','promo-note');
+ const promo=Q.node('p','Mag-iwan ng review matapos ang completed order para makakuha ng 5% voucher sa susunod na order. Isang voucher bawat mobile number kada araw (Philippine time).','promo-note');
  document.getElementById('orderStep2').prepend(promo);
  const notice=Q.node('p','Confirm generates one active checkout QR in this browser. Reconfirming replaces the previous QR; old screenshots become invalid.','promo-note');
  document.getElementById('orderStep3').append(notice);
  const field=Q.node('div');const label=Q.node('label','Have a 5% review voucher? (optional)');label.htmlFor='reviewVoucher';
  const voucher=Q.node('input');voucher.id='reviewVoucher';voucher.placeholder='Paste voucher code or QR link';voucher.autocomplete='off';
- field.append(label,voucher,Q.node('small','Use the same mobile number. One use · 30 days · 5% replaces the website 3%.'));
+ field.append(label,voucher,Q.node('small','Use the same mobile number. One use · Valid for 30 days.'));
  document.getElementById('orderStep3').append(field);
  const revived=read('bbsilog_active_order_token');
  if(revived){
@@ -51,7 +51,7 @@
  buildCustomerOrderSummary=function(){
   const text=originalSummary();if(!matches())return text;
   const discount=Math.round(Number(saved.subtotal)*saved.discount_rate)/100;
-  return text+'\n\nSaved order: '+saved.code+'\nFood discount: '+saved.discount_rate+'% (not stackable)\nEstimated discount: '+Q.money(discount)+'\nEstimated discounted food total: '+Q.money(saved.subtotal-discount)+(saved.unpriced?' + items to confirm':'')+'\nOrder QR / receipt: '+Q.link(saved.token)+'\nStatus must be verified by staff. Old QR codes become invalid after Back / Revise or a replacement checkout.';
+  return text+'\n\nSaved order: '+saved.code+(saved.discount_rate?'\nFood discount: '+saved.discount_rate+'%\nEstimated discount: '+Q.money(discount)+'\nEstimated discounted food total: '+Q.money(saved.subtotal-discount):'\nFood total: '+Q.money(saved.subtotal))+(saved.unpriced?' + items to confirm':'')+'\nOrder QR / receipt: '+Q.link(saved.token)+'\nStatus must be verified by staff. Old QR codes become invalid after Back / Revise or a replacement checkout.';
  };
  const originalNext=orderNext,originalBack=orderBack;
  orderNext=async function(){
@@ -77,7 +77,7 @@
    const save=Q.node('button','Save QR image');save.type='button';save.id='saveOrderQRImage';save.disabled=true;save.onclick=async()=>{await checkStatus();if(qrState==='valid')Q.download(image,result.code+'.png').catch(e=>toast(e.message))};
    const check=Q.node('button','Check status');check.type='button';check.onclick=checkStatus;
    const revise=Q.node('button','Back / Revise order');revise.type='button';revise.onclick=()=>orderBack();
-   box.append(validity,image,save,check,revise,Q.node('p',result.discount_rate+'% food discount · Staff must verify this QR.'),link,Q.node('small','One active QR per checkout browser. Back / Revise invalidates this QR. One 5% review reward per mobile number per day, Philippine time. Keep this QR private.'));
+   box.append(validity,image,save,check,revise,Q.node('p',result.discount_rate===0?'No discount applied. Review your completed order to earn a 5% voucher.':result.discount_rate+'% voucher discount · Staff must verify this QR.'),link,Q.node('small','One active QR per checkout browser. Back / Revise invalidates this QR. One 5% review reward per mobile number per day, Philippine time. Keep this QR private.'));
    box.hidden=false;invalidateCopiedOrder();setOrderStage(4);await checkStatus();
   }catch(error){toast(error.message);box.hidden=true;if(error.message.includes('no longer valid')){saved=null;fingerprint=null;requestId=null;}}
   finally{busy=false;refreshWizardControls();}
@@ -115,7 +115,7 @@
   const code=Q.node('input');code.value=result.voucher;code.readOnly=true;code.setAttribute('aria-label','Your voucher code');
   const save=Q.node('button','Save 5% voucher QR');save.type='button';save.onclick=()=>Q.download(image,'bbsilog-5-percent-voucher.png').catch(e=>toast(e.message));
   const link=Q.node('a','View voucher validity / status');link.href=Q.link(result.voucher,'voucher');link.target='_blank';link.rel='noopener';
-  host.append(image,save,code,link,Q.node('p','One use · Same mobile number · Valid until '+new Date(result.expires_at).toLocaleDateString('en-PH',{timeZone:'Asia/Manila'})+'. Replaces 3%; discounts do not stack.'));
+  host.append(image,save,code,link,Q.node('p','One use · Same mobile number · Valid until '+new Date(result.expires_at).toLocaleDateString('en-PH',{timeZone:'Asia/Manila'})+'. For your next order.'));
   host.scrollIntoView({behavior:'smooth',block:'center'});
  };
 })();

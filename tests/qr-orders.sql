@@ -4,13 +4,13 @@ DECLARE req jsonb; a jsonb; b jsonb; c jsonb; voucher_code text; result jsonb; a
 BEGIN
  req:=jsonb_build_object('request_id',gen_random_uuid(),'name','QR Regression Test','phone','09123456789','fulfillment','Pickup','payment','Cash','items',jsonb_build_array(jsonb_build_object('name','Mixsilog','qty',1,'price',1)));
  a:=public.bbsilog_create_order(req);
- IF (a->>'subtotal')::numeric<>120 OR (a->>'discount_rate')::int<>3 THEN RAISE EXCEPTION 'Server pricing/3 percent failed'; END IF;
+ IF (a->>'subtotal')::numeric<>120 OR (a->>'discount_rate')::int<>0 THEN RAISE EXCEPTION 'Server pricing/no automatic discount failed'; END IF;
  IF public.bbsilog_create_order(req)->>'token'<>a->>'token' THEN RAISE EXCEPTION 'Idempotency failed'; END IF;
  BEGIN PERFORM public.bbsilog_submit_order_review((a->>'token')::uuid,'{"rating":5,"message":"Test"}'); RAISE EXCEPTION 'Test accepted premature reward'; EXCEPTION WHEN OTHERS THEN IF SQLERRM='Test accepted premature reward' THEN RAISE; END IF; END;
  SELECT user_id INTO admin_id FROM bbsilog_private.feedback_admins LIMIT 1;
  PERFORM set_config('request.jwt.claim.sub',admin_id::text,true);
  result:=public.bbsilog_admin_qr(a->>'token','complete');
- IF (result->'data'->>'final_total')::numeric<>116.4 THEN RAISE EXCEPTION '3 percent calculation failed'; END IF;
+ IF (result->'data'->>'final_total')::numeric<>120 THEN RAISE EXCEPTION 'No automatic discount calculation failed'; END IF;
  result:=public.bbsilog_admin_qr(a->>'token','complete');
  IF result->>'error'<>'QR code has been used' THEN RAISE EXCEPTION 'QR replay accepted'; END IF;
  result:=public.bbsilog_submit_order_review((a->>'token')::uuid,'{"rating":1,"message":"Private honest test","publish_consent":false}');
@@ -29,4 +29,4 @@ BEGIN
  IF NOT EXISTS(SELECT 1 FROM jsonb_array_elements(result->'orders') v WHERE v->>'token'=b->>'token') THEN RAISE EXCEPTION 'Archive missing'; END IF;
 END $test$;
 ROLLBACK;
-SELECT 'PASS: canonical prices, 3%/5%, idempotency, completed-only review rewards, honest private review, single-use order and voucher QR, archives. Test data rolled back.' AS result;
+SELECT 'PASS: canonical prices, 0%/5%, idempotency, completed-only review rewards, honest private review, single-use order and voucher QR, archives. Test data rolled back.' AS result;

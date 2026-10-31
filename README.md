@@ -113,7 +113,7 @@ Run focused checks with `node --test tests/review-model.test.cjs tests/music-con
 
 ### Order QR and review discounts
 
-Customers confirm a website order to create a saved, server-priced order and private receipt QR. The food discount is 3%. An eligible review of a completed, paid/fulfilled order issues one 5% voucher for a subsequent order (maximum one per mobile number per Philippine calendar day); any rating qualifies and publication is optional. The voucher replaces 3%, expires in 30 days, and is tied to the same mobile number. Delivery fees are not discounted. Food packs remain inquiry-only.
+Customers confirm a website order to create a saved, server-priced order and private receipt QR. New orders have no automatic discount. An eligible review of a completed, paid/fulfilled order issues one 5% voucher for a subsequent order (maximum one per mobile number per Philippine calendar day); any rating qualifies and publication is optional. The voucher gives 5% off eligible food, expires in 30 days, and is tied to the same mobile number. Delivery fees are not discounted. Food packs remain inquiry-only.
 
 Use the existing admin at /files/feedback-admin.html: Orders, Scan / Verify QR, and Used QR / Archives. Camera scanning, QR screenshot upload, and manual code entry are available. Verification does not redeem a QR. Staff must confirm payment/fulfillment and explicitly complete/redeem it. Database row locks prevent duplicate redemptions, including two orders trying to use the same voucher. Completed records and counts remain in archives.
 
@@ -126,3 +126,5 @@ QR URLs contain a private receipt capability. Keep them between the customer and
 Apply database/qr-revisions-and-daily-rewards.sql after the base QR migration. Only one pending QR per checkout browser key can exist; a new confirmed order cancels the older pending QR atomically. Back / Revise explicitly cancels its QR before returning to edit. Customer and receipt screens poll live QR status and disable sending/saving while invalid or unverified.
 
 Only one review voucher can be issued per normalized mobile number per Philippine calendar day (Asia/Manila), enforced with a unique database index and transaction lock. Additional completed-order reviews still save feedback but do not issue another voucher that day. This limits rewards by mobile number; it does not verify ownership of a number. Staff should confirm the order/contact at fulfillment. Separate identities or phone numbers need an identity/OTP solution if that becomes necessary.
+
+New orders without a valid voucher have no automatic discount. The 5% voucher is issued after an eligible completed-order review. Historical and already-pending 3% orders remain unchanged. Apply database/review-discount-only.sql after prior migrations.
