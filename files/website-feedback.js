@@ -43,10 +43,8 @@
    let photoPath=null;
    if(capturedPhoto){const id=crypto.randomUUID();photoPath='incoming/'+id+'.webp';const upload=await fetch(base+'/storage/v1/object/'+bucket+'/'+photoPath,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'image/webp','x-upsert':'false'},body:capturedPhoto});if(!upload.ok)throw Error('photo upload');}
    const payload={customer_name:document.getElementById('name').value.trim()||null,rating,message,publish_consent:document.getElementById('consent').checked,photo_path:photoPath,photo_layout:photoPath?mode():null,photo_consent:photoPath?document.getElementById('photoConsent').checked:false};
-   let earnedReward=null;const orderToken=new URLSearchParams(location.search).get('review_order');
-   if(orderToken){earnedReward=await BBSILOGQR.api('bbsilog_submit_order_review',{p_token:orderToken,p_review:payload});}
-   else{const res=await fetch(base+'/rest/v1/bbsilog_feedback',{method:'POST',headers:{...headers,Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw Error('Feedback could not be saved.');}
-   stopCamera();setPhoto(null);form.reset();rate(0);note('Photo is optional. Camera permission is requested only when you tap Open camera.');toast('Salamat! Your feedback was sent privately.');if(earnedReward)window.showReviewVoucher(earnedReward);
+   const res=await fetch(base+'/rest/v1/bbsilog_feedback',{method:'POST',headers:{...headers,Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw Error('Feedback could not be saved.');
+   stopCamera();setPhoto(null);form.reset();rate(0);note('Photo is optional. Camera permission is requested only when you tap Open camera.');toast('Salamat! Your feedback was sent privately.');
   }catch(error){toast(error.message||'Feedback could not be sent. Please try again later.');}finally{button.disabled=false;}
  };
  form?.addEventListener('reset',()=>{stopCamera();setPhoto(null);});
