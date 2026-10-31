@@ -7,3 +7,5 @@
 .qr-valid{background:#ecffd9;border:1px solid #9ec368;border-radius:10px;padding:12px;color:#275218;font-weight:700;line-height:1.5}
 .qr-panel .qr-error{background:#fff0d9;border:1px solid #df8d50;border-radius:10px;padding:12px;line-height:1.5}
 .qr-panel button:disabled{opacity:.5;cursor:not-allowed}
+
+.qr-panel [hidden]{display:none!important}.receipt-page #reviewOrder{margin:16px 0;text-align:center;text-decoration:none}

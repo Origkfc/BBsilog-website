@@ -5,19 +5,22 @@
  const refresh=Q.node('button','Check QR status');refresh.type='button';host.before(refresh);
  const notice=Q.node('p','Validity is checked with BBSILOG. Back / Revise or a replacement checkout invalidates an old order QR. A screenshot alone does not guarantee a discount.','note');host.before(notice);
  const review=document.getElementById('reviewOrder');
+ const reviewHint=Q.node('p','Makakapag-review ka rito pagkatapos makumpleto ng staff ang order.','note');
+ review.before(reviewHint);host.before(review);host.before(reviewHint);
  async function update(){
   if(busy||!code)return;busy=true;save.disabled=true;print.disabled=true;refresh.disabled=true;
   try{
    const result=await Q.api('bbsilog_qr_status',{p_code:code});valid=result.valid;
-   status.textContent=result.message+' · Last checked '+new Date().toLocaleTimeString('en-PH',{timeZone:'Asia/Manila'});
+   status.textContent=(result.status==='used'&&kind==='order'?'Order completed · Nagamit na ang discount sa order na ito.':result.message)+' · Last checked '+new Date().toLocaleTimeString('en-PH',{timeZone:'Asia/Manila'});
    status.className=valid?'qr-valid':'qr-error';
    host.hidden=!valid;
    if(valid)Q.qr(host,Q.link(code,kind));
-   review.hidden=true;
+   review.hidden=true;reviewHint.hidden=kind!=='order';
    const details=document.getElementById('receiptDetails');details.replaceChildren();
    if(kind==='order'){
     const order=await Q.api('bbsilog_order_receipt',{p_token:code});Q.details(details,order);
-    if(order.status==='completed'&&!order.review_id){review.hidden=false;review.textContent='Leave review · Up to one 5% voucher per mobile number today';review.href='/?review_order='+encodeURIComponent(code)+'#feedback'}
+    if(order.status==='completed'&&!order.review_id){reviewHint.hidden=true;review.hidden=false;review.textContent='Leave review · Up to one 5% voucher per mobile number today';review.href='/?review_order='+encodeURIComponent(code)+'#feedback'}
+    if(order.review_id)reviewHint.hidden=true;
     if(order.reward){
      details.append(Q.node('h2','Your 5% review voucher'));
      const link=Q.node('a','View voucher QR and current status');link.href=Q.link(order.reward,'voucher');details.append(link);

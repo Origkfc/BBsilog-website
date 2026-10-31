@@ -61,6 +61,11 @@
   busy=true;document.getElementById('orderNext').disabled=true;
   try{
    const data=payload(),signature=JSON.stringify(data);
+   // A completed or cancelled order must never be reused for a fresh purchase.
+   if(saved&&signature===fingerprint){
+    const current=await Q.api('bbsilog_qr_status',{p_code:saved.token});
+    if(!current.valid){saved=null;fingerprint=null;requestId=null;qrState=current.status;}
+   }
    if(signature!==fingerprint){requestId=crypto.randomUUID();saved=null;fingerprint=signature;}
    const result=saved||await Q.api('bbsilog_create_order',{p_request:{...data,request_id:requestId}});
    if(JSON.stringify(payload())!==signature||orderStage!==3)throw Error('Order changed. Confirm updated details again.');
