@@ -43,16 +43,16 @@
  feedbackDemo=async function(event){
   event.preventDefault();if(!rating){toast('Please choose your star rating first.');return}
   const button=form.querySelector('button[type=submit]'),message=document.getElementById('feedbackText').value.trim();if(!message||message.length>1500){toast('Please enter feedback of up to 1,500 characters.');return}
-  const wantsReward=document.getElementById('joinPitcherReward').checked;
   const rewardName=document.getElementById('name').value.trim(),rewardPhone=document.getElementById('rewardPhone').value.trim();
-  if(wantsReward&&(!rewardName||!rewardPhone||!capturedPhoto)){toast('For the reward, add your name, mobile number and photo.');return}
+  const wantsReward=Boolean(rewardPhone);
+  if(wantsReward&&(!rewardName||!capturedPhoto)){toast('To receive the reward, add your name and photo, or remove your mobile number to send feedback without the reward.');return}
   button.disabled=true;
   try{
    let photoPath=null;
    if(capturedPhoto){const id=crypto.randomUUID();photoPath='incoming/'+id+'.webp';const upload=await fetch(base+'/storage/v1/object/'+bucket+'/'+photoPath,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'image/webp','x-upsert':'false'},body:capturedPhoto});if(!upload.ok)throw Error('photo upload');}
    const payload={customer_name:document.getElementById('name').value.trim()||null,rating,message,publish_consent:document.getElementById('consent').checked,photo_path:photoPath,photo_layout:photoPath?mode():null,photo_consent:photoPath?document.getElementById('photoConsent').checked:false};
    let result=null;
-   if(wantsReward){rewardRequest=rewardRequest||crypto.randomUUID(); result=await BBSILOGQR.api('bbsilog_pitcher_submit',{p_request:rewardRequest,p_phone:rewardPhone,p_review:payload}); if(!result.eligible){note(result.message);toast(result.message);return;}}
+   if(wantsReward){rewardRequest=rewardRequest||crypto.randomUUID(); result=await BBSILOGQR.api('bbsilog_pitcher_submit',{p_request:rewardRequest,p_phone:rewardPhone,p_review:payload}); if(!result.eligible){const message='This mobile number has already received a reward. Remove the number to send feedback without a reward.';note(message);toast(message);return;}}
    else{const res=await fetch(base+'/rest/v1/bbsilog_feedback',{method:'POST',headers:{...headers,Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw Error('Feedback could not be saved.');}
    stopCamera();setPhoto(null);form.reset();rate(0);rewardRequest=null;note('Photo is optional. Camera permission is requested only when you tap Open camera.');toast('Thank you! Your feedback was sent privately.');
    if(result?.eligible)showPitcherReward(result.code,payload);
