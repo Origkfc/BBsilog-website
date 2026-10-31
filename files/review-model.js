@@ -17,7 +17,7 @@
   function identityElement(row) {
     const identity = document.createElement('div');
     identity.className = 'review-identity';
-    const name = row.name || row.customer_name || 'BBSILOG customer';
+    const name = (row.name || row.customer_name || '').trim();
     const path = avatarPath(row);
     if (path) {
       const image = document.createElement('img');
@@ -26,8 +26,10 @@
       image.width = 48; image.height = 48; image.loading = 'lazy'; image.decoding = 'async';
       identity.append(image);
     }
-    const label = document.createElement('b'); label.textContent = name;
-    identity.append(label);
+    if (name && name.toLowerCase() !== 'bbsilog customer') {
+      const label = document.createElement('b'); label.textContent = name;
+      identity.append(label);
+    }
     return identity;
   }
   function photoElement(row) {
