@@ -21,10 +21,10 @@
  async function showApproved(){
   try{
    // Anonymous SELECT is restricted to approved, publishable, unarchived rows by RLS.
-   const res=await fetch(base+'/rest/v1/bbsilog_feedback?select=customer_name,rating,message,created_at,source,avatar_path,photo_path,photo_layout,photo_consent&order=created_at.desc&limit=30',{headers});
+   const res=await fetch(base+'/rest/v1/bbsilog_feedback?select=id,customer_name,rating,message,created_at,source,avatar_path,photo_path,photo_layout,photo_consent&order=created_at.desc&limit=30',{headers});
    if(!res.ok)throw Error('reviews unavailable');
    const rows=await res.json();const snapshot=JSON.stringify(rows);if(snapshot===lastReviewsData)return;
-   const reviews=await Promise.all(rows.map(async r=>({name:r.customer_name||'BBSILOG customer',text:r.message,rating:r.rating,source:r.source,avatar_path:r.avatar_path,photo_layout:r.photo_layout,photo_url:r.photo_consent&&r.photo_path?await signPhoto(r.photo_path).catch(()=>null):null,publicationApproved:true,status:'approved'})));
+   const reviews=await Promise.all(rows.map(async r=>({name:Number(r.id)<=29?'BBSILOG customer':r.customer_name||'BBSILOG customer',text:r.message,rating:r.rating,source:r.source,avatar_path:r.avatar_path,photo_layout:r.photo_layout,photo_url:r.photo_consent&&r.photo_path?await signPhoto(r.photo_path).catch(()=>null):null,publicationApproved:true,status:'approved'})));
    renderPublicReviews(reviews);
    const noteEl=document.querySelector('#feedback #publicReviews + .demo-note');if(noteEl)noteEl.textContent=reviews.length?'Customer reviews featured by BBSILOG. Messenger imports have no star rating unless one was provided.':'No approved public reviews yet.';
    const strip=document.querySelector('.hero-glass-reviews');if(!strip){lastReviewsData=snapshot;return;}

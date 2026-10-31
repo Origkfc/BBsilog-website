@@ -11,3 +11,5 @@
 .menu-carousel-arrow:disabled{background:#e8cc93;color:#8d6d36;cursor:default;opacity:.65}
 .menu-carousel-tip{font-size:12px;text-align:center;color:#825326;margin:10px 0 0}
 @media(max-width:700px){.menu-carousel{grid-template-columns:32px minmax(0,1fr) 32px;gap:6px}#menuGrid{gap:16px!important}#menuGrid>.card{flex-basis:132px;min-width:132px}#menuGrid .card-body h3{font-size:19px}.menu-carousel-arrow{width:32px;height:38px;font-size:26px}}
+
+@media(max-width:600px){#menuGrid{gap:12px!important}#menuGrid>.card{flex-basis:104px;min-width:104px}#menuGrid .card-photo{border-width:4px}#menuGrid .card-body{padding:12px 2px 8px}#menuGrid .card-body h3{font-size:16px;min-height:38px}#menuGrid .card-body>.badge{font-size:9px;padding:4px 6px}}
