@@ -3,7 +3,7 @@
  const base='https://ufhblydcgwffwpwdlksm.supabase.co',key='sb_publishable_d10Qrzk0LHaoVYnttjtOyQ_g-049cX3';
  const headers={apikey:key,Authorization:'Bearer '+key,'Content-Type':'application/json'};
  const bucket='bbsilog-feedback-photos';
- let lastReviewsData=null, cameraStream=null, capturedPhoto=null;
+ let lastReviewsData=null, cameraStream=null, capturedPhoto=null, rewardRequest=null;
  const form=document.querySelector('.feedback');
  const camera=document.getElementById('feedbackCamera'), preview=document.getElementById('photoPreview'), photoStatus=document.getElementById('photoStatus');
  const mode=()=>document.querySelector('input[name="photoLayout"]:checked')?.value||'selfie';
@@ -35,16 +35,27 @@
    const copy=set.cloneNode(true);copy.setAttribute('aria-hidden','true');track.append(set,copy);strip.querySelector('.hero-glass-track')?.replaceWith(track);lastReviewsData=snapshot;
   }catch{const host=document.getElementById('publicReviews');if(host&&!host.querySelector('.review-card'))host.textContent='Customer reviews are temporarily unavailable. Please try again shortly.';}
  }
+ function showPitcherReward(code,review){
+  const Q=BBSILOGQR, dialog=document.createElement('dialog'); dialog.className='qr-panel';dialog.setAttribute('aria-label','Your free iced tea pitcher reward');
+  const title=Q.node('h2','Your free iced tea pitcher'); const info=Q.node('p','Take a screenshot of this screen or save the QR before closing. Show it with your feedback on your next dine-in visit. Staff will check your photo and feedback before you claim your one free pitcher. This QR can only be used once.');
+  const qr=Q.node('div',undefined,'qr-image');Q.qr(qr,'BBSILOG-PITCHER:'+code);const details=Q.node('p',review.customer_name+' — '+review.message);const save=Q.node('button','Save QR image');save.type='button';save.onclick=()=>Q.download(qr,'bbsilog-pitcher-reward.png').catch(()=>toast('Could not save the QR. Take a screenshot instead.'));const close=Q.node('button','Close');close.type='button';close.onclick=()=>dialog.close();dialog.addEventListener('close',()=>dialog.remove());dialog.append(title,info,qr,details,save,close);document.body.append(dialog);dialog.showModal();
+ }
  feedbackDemo=async function(event){
   event.preventDefault();if(!rating){toast('Please choose your star rating first.');return}
   const button=form.querySelector('button[type=submit]'),message=document.getElementById('feedbackText').value.trim();if(!message||message.length>1500){toast('Please enter feedback of up to 1,500 characters.');return}
+  const wantsReward=document.getElementById('joinPitcherReward').checked;
+  const rewardName=document.getElementById('name').value.trim(),rewardPhone=document.getElementById('rewardPhone').value.trim();
+  if(wantsReward&&(!rewardName||!rewardPhone||!capturedPhoto)){toast('For the reward, add your name, mobile number and photo.');return}
   button.disabled=true;
   try{
    let photoPath=null;
    if(capturedPhoto){const id=crypto.randomUUID();photoPath='incoming/'+id+'.webp';const upload=await fetch(base+'/storage/v1/object/'+bucket+'/'+photoPath,{method:'POST',headers:{apikey:key,Authorization:'Bearer '+key,'Content-Type':'image/webp','x-upsert':'false'},body:capturedPhoto});if(!upload.ok)throw Error('photo upload');}
    const payload={customer_name:document.getElementById('name').value.trim()||null,rating,message,publish_consent:document.getElementById('consent').checked,photo_path:photoPath,photo_layout:photoPath?mode():null,photo_consent:photoPath?document.getElementById('photoConsent').checked:false};
-   const res=await fetch(base+'/rest/v1/bbsilog_feedback',{method:'POST',headers:{...headers,Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw Error('Feedback could not be saved.');
-   stopCamera();setPhoto(null);form.reset();rate(0);note('Photo is optional. Camera permission is requested only when you tap Open camera.');toast('Salamat! Your feedback was sent privately.');
+   let result=null;
+   if(wantsReward){rewardRequest=rewardRequest||crypto.randomUUID(); result=await BBSILOGQR.api('bbsilog_pitcher_submit',{p_request:rewardRequest,p_phone:rewardPhone,p_review:payload}); if(!result.eligible){note(result.message);toast(result.message);return;}}
+   else{const res=await fetch(base+'/rest/v1/bbsilog_feedback',{method:'POST',headers:{...headers,Prefer:'return=minimal'},body:JSON.stringify(payload)});if(!res.ok)throw Error('Feedback could not be saved.');}
+   stopCamera();setPhoto(null);form.reset();rate(0);rewardRequest=null;note('Photo is optional. Camera permission is requested only when you tap Open camera.');toast('Thank you! Your feedback was sent privately.');
+   if(result?.eligible)showPitcherReward(result.code,payload);
   }catch(error){toast(error.message||'Feedback could not be sent. Please try again later.');}finally{button.disabled=false;}
  };
  form?.addEventListener('reset',()=>{stopCamera();setPhoto(null);});

@@ -58,16 +58,24 @@
    const receipt=Q.node('a','Open customer receipt / review link');receipt.href=Q.link(data.token);receipt.target='_blank';receipt.rel='noopener';host.append(receipt);
   }
  }
+ async function verifyPitcher(code){
+  const host=document.getElementById('verifiedQR');
+  const result=await Q.api('bbsilog_pitcher_admin',{p_code:code,p_action:'verify'},true);
+  host.replaceChildren(Q.node('h3','Free iced tea pitcher'),Q.node('p','Customer: '+result.customer_name+' · '+result.phone),Q.node('p','Feedback: '+result.message),Q.node('p',result.used?'QR code has been used.':'Available for the next dine-in visit.'));
+  if(result.photo_path){const photo=Q.node('img');photo.alt='Customer photo for staff verification';photo.className='admin-review-photo '+result.photo_layout;host.append(photo);try{photo.src=await loadReviewPhoto(result.photo_path)}catch{photo.replaceWith(Q.node('p','Photo unavailable. Do not claim until staff can verify it.','qr-error'));return}}
+  if(result.used){notice('QR code has been used.',true);return}
+  const claim=Q.node('button','Claim free pitcher — one use');claim.onclick=async()=>{claim.disabled=true;try{const after=await Q.api('bbsilog_pitcher_admin',{p_code:code,p_action:'claim'},true);if(after.used){notice(after.claimed_now?'Claim recorded. This QR can no longer be used.':'QR code has already been used.',!after.claimed_now);claim.remove()}}catch(e){notice(e.message,true);claim.disabled=false}};host.append(claim);notice('Valid QR · Check customer photo and feedback before claiming.');
+ }
  async function verify(raw){
   stop();document.getElementById('verifiedQR').replaceChildren();notice('Checking saved system record…');
-  try{currentCode=Q.parse(raw);const result=await Q.api('bbsilog_admin_qr',{p_code:currentCode},true);renderVerified(result);notice(result.used?'QR code has been used':'Valid QR · Not yet used',result.used)}
+  try{if(/^BBSILOG-PITCHER:[0-9a-f-]{36}$/i.test(raw.trim())){await verifyPitcher(raw.trim().split(':')[1]);return}currentCode=Q.parse(raw);const result=await Q.api('bbsilog_admin_qr',{p_code:currentCode},true);renderVerified(result);notice(result.used?'QR code has been used':'Valid QR · Not yet used',result.used)}
   catch(e){notice(e.message,true)}
  }
  document.getElementById('verifyQRForm').onsubmit=e=>{e.preventDefault();verify(document.getElementById('qrCodeInput').value)};
  const video=document.getElementById('qrCamera'),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d',{willReadFrequently:true});
  function decode(source,w,h){const scale=Math.min(1,900/Math.max(w,h));canvas.width=Math.round(w*scale);canvas.height=Math.round(h*scale);ctx.drawImage(source,0,0,canvas.width,canvas.height);const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);return jsQR(pixels.data,pixels.width,pixels.height)?.data}
  document.getElementById('startQRScan').onclick=async()=>{
-  try{stop();stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});video.srcObject=stream;video.hidden=false;await video.play();notice('Point the camera at a BBSILOG order or voucher QR.');
+  try{stop();stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:{ideal:'environment'}},audio:false});video.srcObject=stream;video.hidden=false;await video.play();notice('Point the camera at a BBSILOG reward or previous order QR.');
    function frame(time){if(!stream)return;if(time-lastFrame>200&&video.readyState>=2){lastFrame=time;const text=decode(video,video.videoWidth,video.videoHeight);if(text){verify(text);return}}raf=requestAnimationFrame(frame)}raf=requestAnimationFrame(frame);
   }catch{stop();notice('Camera unavailable. Upload a QR screenshot or paste its code instead.',true)}
  };

@@ -9,3 +9,5 @@
 .qr-panel button:disabled{opacity:.5;cursor:not-allowed}
 
 .qr-panel [hidden]{display:none!important}.receipt-page #reviewOrder{margin:16px 0;text-align:center;text-decoration:none}
+
+dialog.qr-panel{margin:auto;max-width:min(92vw,480px);max-height:90vh;overflow:auto}dialog.qr-panel::backdrop{background:#241006b8}.reward-info{font-size:13px;line-height:1.55;color:#ffe1a0}
