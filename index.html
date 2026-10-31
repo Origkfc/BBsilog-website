@@ -240,9 +240,17 @@ function applyFullLayout(mode){for(const [id]of motionNames)document.body.classL
 function setupPinnedOrderSummary(){const panel=document.querySelector('.order');const header=panel.querySelector('.dialog-head');const items=document.getElementById('orderItems');const heading=items.previousElementSibling;const subtotal=panel.querySelector('.total');const scroll=document.createElement('div');scroll.className='order-scroll-content';for(const child of [...panel.children])if(child!==header)scroll.append(child);const dock=document.createElement('section');dock.className='order-summary-dock';dock.setAttribute('aria-label','Your order summary and food subtotal');dock.append(heading,items,subtotal);panel.append(scroll,dock)}
 setupPinnedOrderSummary();
 
-// Supply the actual business QR asset here when the owner provides it.
-const gcashPaymentDetails={qrImageUrl:null};
-function updateGCashPayment(){const section=document.getElementById('gcashPayment');section.hidden=document.getElementById('payment').value!=='GCash';const content=document.getElementById('gcashQrContent');content.replaceChildren();if(gcashPaymentDetails.qrImageUrl){const img=document.createElement('img');img.className='gcash-qr';img.src=gcashPaymentDetails.qrImageUrl;img.alt='BBSILOG GCash payment QR code';content.append(img)}else{const placeholder=document.createElement('div');placeholder.className='gcash-placeholder';const title=document.createElement('b');title.textContent='GCash QR code coming soon';const note=document.createElement('span');note.textContent='Message BBSILOG for confirmed payment details.';const link=document.createElement('a');link.className='view';link.href='https://m.me/bbsilog.tapsilogan';link.target='_blank';link.rel='noopener';link.textContent='Ask for payment details ↗';placeholder.append(title,note,link);content.append(placeholder)}}
+const gcashPaymentDetails={qrImageUrl:'/files/gcash-payment-qr.png',mobile:'0905-315-9827',accountName:'JI****N G.'};
+function updateGCashPayment(){
+ const section=document.getElementById('gcashPayment');section.hidden=document.getElementById('payment').value!=='GCash';
+ const content=document.getElementById('gcashQrContent');content.replaceChildren();
+ const img=document.createElement('img');img.className='gcash-qr';img.src=gcashPaymentDetails.qrImageUrl;img.alt='BBSILOG GCash QR — '+gcashPaymentDetails.accountName+', '+gcashPaymentDetails.mobile;
+ const account=document.createElement('p');account.textContent='GCash account: '+gcashPaymentDetails.accountName+' · '+gcashPaymentDetails.mobile;
+ const save=document.createElement('a');save.className='view';save.href=gcashPaymentDetails.qrImageUrl;save.download='BBSILOG-GCash-QR.png';save.textContent='Save GCash QR';
+ const open=document.createElement('a');open.className='view';open.href=gcashPaymentDetails.qrImageUrl;open.target='_blank';open.rel='noopener';open.textContent='Open full-size QR ↗';
+ const note=document.createElement('p');note.textContent='After paying, send your GCash receipt and reference number to BBSILOG in Messenger. Payment is confirmed only after staff checks that the transfer was received.';
+ content.append(img,account,save,document.createTextNode(' · '),open,note);
+}
 updateGCashPayment();
 
 function renderFrontFeedback(reviews){const selected=reviews.filter(r=>r.status==='approved'&&r.publishConsent===true&&Number(r.rating)>=4);if(!selected.length)return;const host=document.getElementById('frontReviewCards');host.replaceChildren();selected.slice(0,6).forEach(r=>{const card=document.createElement('article');card.className='front-review-card';const stars=document.createElement('div');stars.className='stars';stars.textContent='★'.repeat(Math.min(5,Math.floor(Number(r.rating))));stars.setAttribute('aria-label',r.rating+' out of 5 stars');const quote=document.createElement('p');quote.textContent=r.text;const name=document.createElement('small');name.textContent=r.name||'BBSILOG customer';card.append(stars,quote,name);host.append(card)})}
