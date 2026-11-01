@@ -1164,7 +1164,7 @@ const products=[
   {
     "name": "Garlic Pepper Beef",
     "price": 160,
-    "img": "menu-images/garlic-pepper-beef",
+    "img": "menu-images/garlic-pepper-beef-actual",
     "cat": "BB Specials",
     "tag": "LIMITED EDITION",
     "desc": "Tender beef in garlic pepper gravy with rice.",
@@ -1173,7 +1173,7 @@ const products=[
   {
     "name": "Chicken Ala King",
     "price": 100,
-    "img": "menu-images/chicken-ala-king",
+    "img": "menu-images/chicken-ala-king-actual",
     "cat": "BB Specials",
     "tag": "LIMITED EDITION",
     "desc": "Creamy chicken ala king with rice.",
