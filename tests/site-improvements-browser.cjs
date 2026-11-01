@@ -1,0 +1,84 @@
+const {chromium}=require(process.env.PLAYWRIGHT_MODULE || 'playwright');
+const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'..');
+const server=http.createServer((req,res)=>{let rel=new URL(req.url,'http://localhost').pathname;if(rel==='/')rel='/index.html';if(!/^\/(index\.html|files\/)/.test(rel)||rel.includes('..'))return res.writeHead(404).end();const file=path.join(root,rel);if(!fs.existsSync(file))return res.writeHead(404).end();res.setHeader('Content-Type',({'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.webp':'image/webp','.png':'image/png','.mp4':'video/mp4','.mp3':'audio/mpeg'})[path.extname(file)]||'application/octet-stream');fs.createReadStream(file).pipe(res)});
+(async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({channel:'msedge',headless:true});try{
+const context=await browser.newContext({viewport:{width:390,height:844}}),errors=[];
+const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+await page.route('https://ufhblydcgwffwpwdlksm.supabase.co/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+await page.addInitScript(()=>{window.rafCounts={};const raf=requestAnimationFrame;window.requestAnimationFrame=callback=>raf(time=>{const name=callback.name||'anonymous';window.rafCounts[name]=(window.rafCounts[name]||0)+1;callback(time)})});
+const url=process.env.RELEASE_URL||'http://127.0.0.1:'+server.address().port+'/?motion=custom';
+await page.goto(url,{waitUntil:'domcontentloaded'});await page.waitForTimeout(700);
+assert.equal(await page.locator('.limited-card').count(),2);
+for(const [name,price] of [['Garlic Pepper Beef',160],['Chicken Ala King',100]]){
+ const entry=await page.evaluate(name=>{const p=products.find(p=>p.name.includes(name));return {price:p.price,category:p.cat,limited:p.limitedEdition}},name);
+ assert.deepEqual(entry,{price,category:'BB Specials',limited:true});
+ const card=page.locator('.limited-card').filter({hasText:name});assert.match(await card.innerText(),new RegExp('₱'+price));
+ await card.scrollIntoViewIfNeeded();assert.equal(await card.locator('img').evaluate(img=>img.complete&&img.naturalWidth>0),true);
+}
+await page.locator('.limited-card').first().screenshot({path:root+'/tests/limited-390.png'});
+await page.locator('.limited-card button').first().click();await page.waitForTimeout(200);
+assert.equal(await page.locator('#orderFilters .active').innerText(),'BB Specials');
+assert.equal(await page.locator('#overlay').evaluate(el=>el.classList.contains('open')),true);
+assert.equal(await page.locator('.order').getByText('Illustrative photo',{exact:true}).count(),0);
+await page.evaluate(()=>{panelCategory('Smoothies')});
+assert.equal(await page.locator('.smoothie-size-options').count(),12);
+const first=page.locator('#panelMeals .panel-meal').first();
+await first.locator('.smoothie-size-choice').nth(1).click();await first.locator('.plus').click();
+assert.equal(await page.evaluate(()=>subtotal()),95);
+assert.match(await page.evaluate(()=>products[Object.keys(cart)[0]].name),/22 oz/);
+assert.equal(await page.locator('select[id^=orderSize]').count(),0);
+await first.screenshot({path:root+'/tests/sizes-390.png'});
+await page.locator('#orderNext').click();await page.locator('#orderNext').click();
+assert.deepEqual(await page.locator('#fulfillment option').allTextContents(),['Pickup','Delivery']);
+await page.locator('#orderCustomerName').fill('Test Customer');await page.locator('#orderCustomerPhone').fill('09171234567');await page.locator('#payment').selectOption('Cash');
+await page.locator('#fulfillment').selectOption('Delivery');
+assert.equal(await page.locator('select#deliveryZone').count(),0);
+assert.equal(await page.locator('#orderNext').isDisabled(),true);
+await page.locator('#deliveryCoverage').check();await page.locator('#address').fill('Silanganan St., Brgy. 26, Maypajo, South Caloocan');
+assert.equal(await page.locator('#orderNext').isEnabled(),true);
+await page.locator('#orderNext').click();assert.match(await page.locator('#confirmOrderText').innerText(),/Service: Delivery/);
+await page.locator('#orderBack').click();await page.locator('#fulfillment').selectOption('Pickup');
+await page.locator('#orderNext').click();assert.match(await page.locator('#confirmOrderText').innerText(),/Service: Pickup/);
+await page.evaluate(()=>hideOrder());
+await page.locator('#about').scrollIntoViewIfNeeded();await page.waitForTimeout(500);await page.evaluate(()=>{window.rafCounts={}});await page.waitForTimeout(1500);
+const counts=await page.evaluate(()=>window.rafCounts);assert.equal(counts.tickDVD||0,0);assert.equal(counts.tick||0,0);
+assert.equal(await page.evaluate(()=>window.bbsilogHeroActive),false);
+console.log(JSON.stringify({offscreenCallbacks:counts}));
+await page.evaluate(()=>document.getElementById('home').scrollIntoView({behavior:'instant'}));await page.waitForTimeout(500);assert.equal(await page.evaluate(()=>window.bbsilogHeroActive),true);
+assert.ok((await page.evaluate(()=>window.rafCounts.tickDVD))>0);
+await context.setOffline(true);await page.waitForTimeout(150);assert.match(await page.locator('.connection-notice').innerText(),/No internet connection/);
+await page.locator('.connection-notice button').click();assert.equal(await page.locator('.connection-notice button').isEnabled(),true);
+await context.setOffline(false);await page.waitForTimeout(600);assert.equal(await page.locator('.connection-notice').isHidden(),true);
+await page.route('**/files/connection-check.txt',r=>r.abort());await page.evaluate(()=>dispatchEvent(new Event('online')));await page.waitForTimeout(300);
+assert.match(await page.locator('.connection-notice').innerText(),/Unable to connect/);
+await page.unroute('**/files/connection-check.txt');
+await Promise.all([page.waitForEvent('load'),page.locator('.connection-notice button').click()]);
+await page.waitForTimeout(300);assert.equal(await page.locator('.connection-notice').isHidden(),true);
+for(const width of [320,390,768,1280]){
+ await page.setViewportSize({width,height:930});await page.locator('#limited-edition').scrollIntoViewIfNeeded();await page.waitForTimeout(200);
+ assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false,'No page overflow at '+width);
+ assert.equal(await page.locator('.limited-card').first().evaluate(el=>el.scrollWidth>el.clientWidth),false);
+ if(width===1280)await page.locator('#limited-edition').screenshot({path:root+'/tests/limited-1280.png'});
+}
+await page.setViewportSize({width:320,height:844});await page.evaluate(()=>{showOrder();panelCategory('Smoothies')});await page.waitForTimeout(200);
+assert.equal(await page.locator('.order').evaluate(el=>el.scrollWidth>el.clientWidth),false,'Order fits small phones');
+assert.equal(await page.locator('#panelMeals').evaluate(el=>el.scrollWidth>el.clientWidth),false,'Size choices fit small phones');
+await page.locator('#panelMeals .panel-meal').first().screenshot({path:root+'/tests/sizes-320.png'});await page.evaluate(()=>hideOrder());
+assert.deepEqual(errors,[]);console.log('PASS: special prices/photos, radio size cart, pickup/delivery validation, offline/retry, responsive layout, idle animation loops.');
+// Browser connection hint produces the themed weak-connection state.
+const slow=await browser.newPage();await slow.addInitScript(()=>Object.defineProperty(navigator,'connection',{value:{effectiveType:'2g',downlink:.3,addEventListener(){}}}));
+await slow.route('https://ufhblydcgwffwpwdlksm.supabase.co/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
+await slow.goto(url,{waitUntil:'domcontentloaded'});await slow.waitForTimeout(400);assert.match(await slow.locator('.connection-notice').innerText(),/connection seems slow/);await slow.close();
+
+const reviews=await browser.newPage({viewport:{width:390,height:844}});
+const rows=Array.from({length:8},(_,i)=>({id:100+i,customer_name:'Browser Test '+i,rating:5,message:'Browser-only fixture for checking scrolling and resume behavior.',source:'website',photo_consent:false}));
+await reviews.route('https://ufhblydcgwffwpwdlksm.supabase.co/**',r=>r.fulfill({status:200,contentType:'application/json',body:JSON.stringify(rows)}));
+await reviews.goto(url,{waitUntil:'domcontentloaded'});await reviews.waitForSelector('.review-scroll-window .glass-review');
+const scroll=reviews.locator('.review-scroll-window');await scroll.scrollIntoViewIfNeeded();await reviews.waitForTimeout(700);
+const start=await scroll.evaluate(el=>el.scrollLeft);await reviews.waitForTimeout(700);assert.ok(await scroll.evaluate(el=>el.scrollLeft)>start,'Reviews move while visible');
+await scroll.dispatchEvent('pointerdown');await scroll.dispatchEvent('pointerup');await scroll.evaluate(el=>el.scrollLeft=150);await reviews.waitForTimeout(100);
+const stopped=await scroll.evaluate(el=>el.scrollLeft);await reviews.waitForTimeout(600);assert.equal(await scroll.evaluate(el=>el.scrollLeft),stopped);
+await reviews.waitForTimeout(3800);assert.ok(await scroll.evaluate(el=>el.scrollLeft)>stopped,'Reviews auto-resume after manual scroll');await reviews.close();
+console.log('PASS: review scrolling, manual pause and automatic resume.');
+}finally{await browser.close();server.close()}})().catch(e=>{console.error(e);server.close();process.exitCode=1});

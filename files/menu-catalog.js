@@ -1160,6 +1160,24 @@ const products=[
     "tag": "",
     "desc": "Marinated pork with java rice, vegetables, and gravy.",
     "illustrative": true
+  },
+  {
+    "name": "Garlic Pepper Beef",
+    "price": 160,
+    "img": "menu-images/garlic-pepper-beef",
+    "cat": "BB Specials",
+    "tag": "LIMITED EDITION",
+    "desc": "Tender beef in garlic pepper gravy with rice.",
+    "limitedEdition": true
+  },
+  {
+    "name": "Chicken Ala King",
+    "price": 100,
+    "img": "menu-images/chicken-ala-king",
+    "cat": "BB Specials",
+    "tag": "LIMITED EDITION",
+    "desc": "Creamy chicken ala king with rice.",
+    "limitedEdition": true
   }
 ];
 const categories=[
