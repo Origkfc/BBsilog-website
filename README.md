@@ -107,7 +107,7 @@ Run focused checks with `node --test tests/review-model.test.cjs tests/music-con
 ## BBSILOG
 
 - **Address:** Silanganan St. corner Purification St., Brgy. 26, Maypajo, Caloocan City
-- **Hours:** Daily, 6 PM–3 AM
+- **Hours:** Daily, 6 PM–2 AM
 - **Facebook and orders:** [BBSILOG Tapsilogan](https://www.facebook.com/bbsilog.tapsilogan)
 - **Messenger:** [Message BBSILOG](https://m.me/bbsilog.tapsilogan)
 
@@ -135,3 +135,10 @@ New orders without a valid voucher have no automatic discount. The 5% voucher is
 The customer menu is maintained in `files/menu-catalog.js`. Smoothies have separately priced 16 oz and 22 oz variants. Seven standard food packs display their per-pack prices; the minimum food-pack order is 20 packs. Custom combinations require a quote. Food packs remain outside the regular order cart.
 
 Contact: 0947 760 3051, with call, SMS and WhatsApp links in Our Story. New menu illustrations are stored in `files/menu-images/` and identified as illustrative in the order panel; their prompts are documented in `tests/menu-image-prompts.md`.
+
+
+### Additional meals and serving photos — November 1, 2026
+
+Added six silog meals, B1 single burger steak, and five sizzling meals at the prices supplied by the owner. Bacsilog now belongs to Silog meals. The existing Special Chicken Silog and Sizzling Ala Max Chicken remain separate from the newly added Chicken Silog and Sizzling Chicken.
+
+Opening hours are 6 PM–2 AM daily. Extras now use food photos instead of emoji icons. S3 includes plain rice in its description and illustration.

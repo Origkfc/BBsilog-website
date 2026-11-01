@@ -75,6 +75,15 @@ const products=[
     ]
   },
   {
+    "name": "B1 - 1 pc Burger Steak",
+    "price": 70,
+    "img": "menu-images/burger-steak-one",
+    "cat": "Burger steak",
+    "tag": "",
+    "desc": "One burger patty with mushroom gravy and plain rice.",
+    "illustrative": true
+  },
+  {
     "name": "B2 - 2 pcs Burger Steak",
     "price": 90,
     "img": "burger",
@@ -393,7 +402,7 @@ const products=[
     "name": "Bacsilog",
     "price": 110,
     "img": "bacsilog",
-    "cat": "Bacsilog",
+    "cat": "Silog meals",
     "bestSeller": true,
     "tag": "BEST SELLER",
     "desc": "Bacon, rice, egg, and creamy sauce.",
@@ -675,15 +684,17 @@ const products=[
     "name": "Plain Rice",
     "price": 20,
     "cat": "Extras",
-    "extraKind": "rice",
-    "desc": "One extra serving of plain rice."
+    "desc": "One extra serving of plain rice.",
+    "img": "menu-images/extra-plain-rice",
+    "illustrative": true
   },
   {
     "name": "Extra Egg",
     "price": 20,
     "cat": "Extras",
-    "extraKind": "egg",
-    "desc": "One extra egg."
+    "desc": "One extra egg.",
+    "img": "menu-images/extra-egg",
+    "illustrative": true
   },
   {
     "name": "Hotsilog",
@@ -751,56 +762,56 @@ const products=[
   {
     "name": "Garlic Rice",
     "price": 25,
-    "img": null,
+    "img": "menu-images/extra-garlic-rice",
     "cat": "Extras",
     "tag": "",
     "desc": "One serving of garlic rice.",
-    "extraKind": "rice"
+    "illustrative": true
   },
   {
     "name": "Java Rice",
     "price": 25,
-    "img": null,
+    "img": "menu-images/extra-java-rice",
     "cat": "Extras",
     "tag": "",
     "desc": "One serving of java rice.",
-    "extraKind": "rice"
+    "illustrative": true
   },
   {
     "name": "Silog",
     "price": 55,
-    "img": null,
+    "img": "menu-images/extra-silog",
     "cat": "Extras",
     "tag": "",
     "desc": "Rice and egg.",
-    "extraKind": "rice"
+    "illustrative": true
   },
   {
     "name": "Hotdog",
     "price": 35,
-    "img": null,
+    "img": "menu-images/extra-hotdog",
     "cat": "Extras",
     "tag": "",
     "desc": "An extra hotdog.",
-    "extraKind": "hotdog"
+    "illustrative": true
   },
   {
     "name": "Gravy",
     "price": 20,
-    "img": null,
+    "img": "menu-images/extra-gravy",
     "cat": "Extras",
     "tag": "",
     "desc": "An extra serving of gravy.",
-    "extraKind": "gravy"
+    "illustrative": true
   },
   {
     "name": "Spam - 2 pcs",
     "price": 75,
-    "img": null,
+    "img": "menu-images/extra-spam-two",
     "cat": "Extras",
     "tag": "",
     "desc": "Two pieces of Spam.",
-    "extraKind": "spam"
+    "illustrative": true
   },
   {
     "name": "S2 - Chicken Spaghetti",
@@ -814,10 +825,10 @@ const products=[
   {
     "name": "S3 - Spaghetti with Burger Steak",
     "price": 145,
-    "img": "menu-images/burger-spaghetti",
+    "img": "menu-images/burger-spaghetti-rice",
     "cat": "Spaghetti",
     "tag": "",
-    "desc": "Spaghetti with burger steak.",
+    "desc": "Spaghetti with burger steak, mushroom gravy, and plain rice.",
     "illustrative": true
   },
   {
@@ -1050,6 +1061,105 @@ const products=[
     "desc": "Mango Keso Cheesecake.",
     "illustrative": true,
     "bestSeller": true
+  },
+  {
+    "name": "Corned Beef Silog (Premium Corned Beef)",
+    "price": 110,
+    "img": "menu-images/corned-beef-silog",
+    "cat": "Silog meals",
+    "tag": "",
+    "desc": "Premium corned beef with garlic rice and egg.",
+    "illustrative": true
+  },
+  {
+    "name": "Tocilog",
+    "price": 100,
+    "img": "menu-images/tocilog",
+    "cat": "Silog meals",
+    "tag": "",
+    "desc": "Pork tocino with garlic rice and egg.",
+    "illustrative": true
+  },
+  {
+    "name": "Chicken Silog",
+    "price": 100,
+    "img": "menu-images/chicken-silog",
+    "cat": "Silog meals",
+    "tag": "",
+    "desc": "Chicken with garlic rice and egg.",
+    "illustrative": true
+  },
+  {
+    "name": "Hungarian Silog",
+    "price": 100,
+    "img": "menu-images/hungarian-silog",
+    "cat": "Silog meals",
+    "tag": "",
+    "desc": "Hungarian sausage with garlic rice and egg.",
+    "illustrative": true
+  },
+  {
+    "name": "Chichabu Silog",
+    "price": 100,
+    "img": "menu-images/chichabu-silog",
+    "cat": "Silog meals",
+    "tag": "",
+    "desc": "Crispy Chichabu with garlic rice and egg.",
+    "illustrative": true
+  },
+  {
+    "name": "Tinapa Silog",
+    "price": 100,
+    "img": "menu-images/tinapa-silog",
+    "cat": "Silog meals",
+    "tag": "",
+    "desc": "Smoked fish with garlic rice and egg.",
+    "illustrative": true
+  },
+  {
+    "name": "Sizzling Lechon",
+    "price": 140,
+    "img": "menu-images/sizzling-lechon",
+    "cat": "Sizzling plates",
+    "tag": "",
+    "desc": "Sizzling lechon with java rice, vegetables, and gravy.",
+    "illustrative": true
+  },
+  {
+    "name": "Sizzling Double Decker",
+    "price": 120,
+    "img": "menu-images/sizzling-double-decker",
+    "cat": "Sizzling plates",
+    "tag": "",
+    "desc": "Sizzling Double Decker served on a hot plate.",
+    "illustrative": true
+  },
+  {
+    "name": "Sizzling Hungarian",
+    "price": 130,
+    "img": "menu-images/sizzling-hungarian",
+    "cat": "Sizzling plates",
+    "tag": "",
+    "desc": "Hungarian sausage with java rice, vegetables, and gravy.",
+    "illustrative": true
+  },
+  {
+    "name": "Sizzling Chicken",
+    "price": 130,
+    "img": "menu-images/sizzling-chicken",
+    "cat": "Sizzling plates",
+    "tag": "",
+    "desc": "Chicken with java rice, vegetables, and gravy.",
+    "illustrative": true
+  },
+  {
+    "name": "Sizzling Marinated Pork",
+    "price": 140,
+    "img": "menu-images/sizzling-marinated-pork",
+    "cat": "Sizzling plates",
+    "tag": "",
+    "desc": "Marinated pork with java rice, vegetables, and gravy.",
+    "illustrative": true
   }
 ];
 const categories=[
@@ -1088,10 +1198,6 @@ const categories=[
   [
     "Smoothies",
     "mango-smoothie"
-  ],
-  [
-    "Bacsilog",
-    "bacsilog"
   ]
 ];
 
