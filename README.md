@@ -111,30 +111,17 @@ Run focused checks with `node --test tests/review-model.test.cjs tests/music-con
 - **Facebook and orders:** [BBSILOG Tapsilogan](https://www.facebook.com/bbsilog.tapsilogan)
 - **Messenger:** [Message BBSILOG](https://m.me/bbsilog.tapsilogan)
 
-### Order QR and review discounts
+### Feedback pitcher rewards
 
-Customers confirm a website order to create a saved, server-priced order and private receipt QR. New orders have no automatic discount. An eligible review of a completed, paid/fulfilled order issues one 5% voucher for a subsequent order (maximum one per mobile number per Philippine calendar day); any rating qualifies and publication is optional. The voucher gives 5% off eligible food, expires in 30 days, and is tied to the same mobile number. Delivery fees are not discounted. Food packs remain inquiry-only.
+Regular orders use the copy-summary-to-Messenger checkout. Order QR codes and percentage discounts are retired. Feedback with a name, mobile number and photo can receive a single-use free iced tea pitcher QR for the next dine-in visit. One reward per normalized mobile number; staff check the photo and feedback before redemption. Phone numbers are not SMS-verified. Public name/review consent and photo consent remain separate from reward eligibility.
 
-Use the existing admin at /files/feedback-admin.html: Orders, Scan / Verify QR, and Used QR / Archives. Camera scanning, QR screenshot upload, and manual code entry are available. Verification does not redeem a QR. Staff must confirm payment/fulfillment and explicitly complete/redeem it. Database row locks prevent duplicate redemptions, including two orders trying to use the same voucher. Completed records and counts remain in archives.
-
-Private tables and public/admin RPCs are installed by database/website-qr-orders.sql. The server catalog is intentionally authoritative: update bbsilog_private.order_catalog when changing menu prices or names in index.html. Unknown prices require a staff-confirmed amount at completion. QR verification does not verify GCash payments automatically.
-
-QR URLs contain a private receipt capability. Keep them between the customer and staff. QR libraries are bundled locally under files/vendor; no third-party QR-generation service receives order data.
-
-### QR revisions and daily review rewards
-
-Apply database/qr-revisions-and-daily-rewards.sql after the base QR migration. Only one pending QR per checkout browser key can exist; a new confirmed order cancels the older pending QR atomically. Back / Revise explicitly cancels its QR before returning to edit. Customer and receipt screens poll live QR status and disable sending/saving while invalid or unverified.
-
-Only one review voucher can be issued per normalized mobile number per Philippine calendar day (Asia/Manila), enforced with a unique database index and transaction lock. Additional completed-order reviews still save feedback but do not issue another voucher that day. This limits rewards by mobile number; it does not verify ownership of a number. Staff should confirm the order/contact at fulfillment. Separate identities or phone numbers need an identity/OTP solution if that becomes necessary.
-
-New orders without a valid voucher have no automatic discount. The 5% voucher is issued after an eligible completed-order review. Historical and already-pending 3% orders remain unchanged. Apply database/review-discount-only.sql after prior migrations.
-
+Use the existing admin at `/files/feedback-admin.html`: Feedback, Free iced tea pitchers and Scan reward QR. Approving a review does not override photo consent. Historical order migrations remain in `database/` for audit only.
 
 ### Menu and contact update — November 1, 2026
 
 The customer menu is maintained in `files/menu-catalog.js`. Smoothies have separately priced 16 oz and 22 oz variants. Seven standard food packs display their per-pack prices; the minimum food-pack order is 20 packs. Custom combinations require a quote. Food packs remain outside the regular order cart.
 
-Contact: 0947 760 3051, with call, SMS and WhatsApp links in Our Story. New menu illustrations are stored in `files/menu-images/` and identified as illustrative in the order panel; their prompts are documented in `tests/menu-image-prompts.md`.
+Contact: 0947 760 3051, displayed in Our Story with a WhatsApp link. Menu illustrations are stored in `files/menu-images/`; their prompts are documented in `tests/menu-image-prompts.md`. The latest Garlic Pepper Beef and Chicken Ala King photos are based on the owner’s actual dishes.
 
 
 ### Additional meals and serving photos — November 1, 2026
@@ -142,3 +129,18 @@ Contact: 0947 760 3051, with call, SMS and WhatsApp links in Our Story. New menu
 Added six silog meals, B1 single burger steak, and five sizzling meals at the prices supplied by the owner. Bacsilog now belongs to Silog meals. The existing Special Chicken Silog and Sizzling Ala Max Chicken remain separate from the newly added Chicken Silog and Sizzling Chicken.
 
 Opening hours are 6 PM–2 AM daily. Extras now use food photos instead of emoji icons. S3 includes plain rice in its description and illustration.
+
+
+### Delivery map estimate — November 1, 2026
+
+Delivery checkout adds a location step after customer details. Customers tap or drag a destination pin, see the distance and fee, then acknowledge the pin before confirming. Pickup skips the map. Changing the address clears its previous pin; changing the order invalidates a copied summary. The Messenger text includes the selected Google Maps pin link, proximity distance, estimated fee and food-plus-delivery total. Staff still verify South Caloocan coverage and the final total; pins alone do not establish address eligibility.
+
+Rates use **straight-line map proximity**, not road/driving distance, from BBSILOG (14.6418488, 120.9749312): up to 0.5 km ₱20; over 0.5–1 km ₱40; over 1–1.5 km ₱60; over 1.5–2.5 km ₱80. Beyond 2.5 km requires pickup. The checked Google Maps driving route to SM Grand Central Parking was about 2.5 km; the exact rear entrance and route can vary.
+
+Leaflet 1.9.4 is bundled with its license and loaded only when the delivery map opens. OpenStreetMap tiles use normal browser caching, visible attribution and no bulk prefetch. Tile service is best effort; Retry map is available. The optional location button requests device permission only when tapped. No destination is saved server-side by the map; the customer shares its pin with staff when sending the Messenger order. A map pin is a customer-supplied estimate, not payment or fulfillment verification.
+
+`window.BBSILOG_MAP_TILE_URL` may override the tile URL if the tile service changes. Review the [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before changing caching or map traffic behavior.
+
+Focused checks: `node tests/delivery-fees.test.cjs` and `node tests/delivery-map-browser.cjs` (set `PLAYWRIGHT_MODULE` if needed). Browser tests use fixture tiles to avoid unnecessary public map traffic.
+
+Follow BBSILOG updates now live in the footer. Limited Edition cards animate once on first scroll into view; reduced-motion visitors get no reveal animation. The approved groupie photo for feedback record 32 was enabled after the owner confirmed customer permission; no other photo permissions were changed.
