@@ -106,7 +106,7 @@ Run focused checks with `node --test tests/review-model.test.cjs tests/music-con
 
 ## BBSILOG
 
-- **Address:** Silanganan St., Brgy. 26, Pajo, Caloocan City
+- **Address:** Silanganan St. corner Purification St., Brgy. 26, Maypajo, Caloocan City
 - **Hours:** Daily, 6 PM–3 AM
 - **Facebook and orders:** [BBSILOG Tapsilogan](https://www.facebook.com/bbsilog.tapsilogan)
 - **Messenger:** [Message BBSILOG](https://m.me/bbsilog.tapsilogan)
@@ -128,3 +128,10 @@ Apply database/qr-revisions-and-daily-rewards.sql after the base QR migration. O
 Only one review voucher can be issued per normalized mobile number per Philippine calendar day (Asia/Manila), enforced with a unique database index and transaction lock. Additional completed-order reviews still save feedback but do not issue another voucher that day. This limits rewards by mobile number; it does not verify ownership of a number. Staff should confirm the order/contact at fulfillment. Separate identities or phone numbers need an identity/OTP solution if that becomes necessary.
 
 New orders without a valid voucher have no automatic discount. The 5% voucher is issued after an eligible completed-order review. Historical and already-pending 3% orders remain unchanged. Apply database/review-discount-only.sql after prior migrations.
+
+
+### Menu and contact update — November 1, 2026
+
+The customer menu is maintained in `files/menu-catalog.js`. Smoothies have separately priced 16 oz and 22 oz variants. Seven standard food packs display their per-pack prices; the minimum food-pack order is 20 packs. Custom combinations require a quote. Food packs remain outside the regular order cart.
+
+Contact: 0947 760 3051, with call, SMS and WhatsApp links in Our Story. New menu illustrations are stored in `files/menu-images/` and identified as illustrative in the order panel; their prompts are documented in `tests/menu-image-prompts.md`.
