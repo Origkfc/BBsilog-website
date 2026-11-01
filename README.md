@@ -131,16 +131,14 @@ Added six silog meals, B1 single burger steak, and five sizzling meals at the pr
 Opening hours are 6 PM–2 AM daily. Extras now use food photos instead of emoji icons. S3 includes plain rice in its description and illustration.
 
 
-### Delivery map estimate — November 1, 2026
+### Delivery confirmation in Messenger — November 1, 2026
 
-Delivery checkout adds a location step after customer details. Customers tap or drag a destination pin, see the distance and fee, then acknowledge the pin before confirming. Pickup skips the map. Changing the address clears its previous pin; changing the order invalidates a copied summary. The Messenger text includes the selected Google Maps pin link, proximity distance, estimated fee and food-plus-delivery total. Staff still verify South Caloocan coverage and the final total; pins alone do not establish address eligibility.
+The website collects an order request, customer details and a complete delivery address. Both pickup and delivery use the same four steps: Order, Review, Details, Confirm. Delivery remains limited to South Caloocan near Maypajo, subject to staff address verification.
 
-Rates use **straight-line map proximity**, not road/driving distance, from BBSILOG (14.6418488, 120.9749312): up to 0.5 km ₱20; over 0.5–1 km ₱40; over 1–1.5 km ₱60; over 1.5–2.5 km ₱80. Beyond 2.5 km requires pickup. The checked Google Maps driving route to SM Grand Central Parking was about 2.5 km; the exact rear entrance and route can vary.
+The order summary shows the food subtotal only. Staff confirm availability, add the delivery fee and provide the full payment total in Messenger. Customers are explicitly told to wait for that confirmation before paying through GCash. The previous proximity map, location step and automatic distance-based fee estimates have been removed.
 
-Leaflet 1.9.4 is bundled with its license and loaded only when the delivery map opens. OpenStreetMap tiles use normal browser caching, visible attribution and no bulk prefetch. Tile service is best effort; Retry map is available. The optional location button requests device permission only when tapped. No destination is saved server-side by the map; the customer shares its pin with staff when sending the Messenger order. A map pin is a customer-supplied estimate, not payment or fulfillment verification.
+Changing the order or details invalidates the copied summary. Messenger unlocks only after the customer copies the latest valid summary. No order is sent or payment recorded by this checkout.
 
-`window.BBSILOG_MAP_TILE_URL` may override the tile URL if the tile service changes. Review the [OSM tile usage policy](https://operations.osmfoundation.org/policies/tiles/) before changing caching or map traffic behavior.
-
-Focused checks: `node tests/delivery-fees.test.cjs` and `node tests/delivery-map-browser.cjs` (set `PLAYWRIGHT_MODULE` if needed). Browser tests use fixture tiles to avoid unnecessary public map traffic.
+Focused browser check: `node tests/delivery-messenger-browser.cjs` (set `PLAYWRIGHT_MODULE` if needed).
 
 Follow BBSILOG updates now live in the footer. Limited Edition cards animate once on first scroll into view; reduced-motion visitors get no reveal animation. The approved groupie photo for feedback record 32 was enabled after the owner confirmed customer permission; no other photo permissions were changed.

@@ -37,7 +37,7 @@ assert.equal(await page.locator('select#deliveryZone').count(),0);
 assert.equal(await page.locator('#orderNext').isDisabled(),true);
 await page.locator('#deliveryCoverage').check();await page.locator('#address').fill('Silanganan St., Brgy. 26, Maypajo, South Caloocan');
 assert.equal(await page.locator('#orderNext').isEnabled(),true);
-await page.locator('#orderNext').click();assert.equal(await page.locator('#orderStepMap').isVisible(),true);
+await page.locator('#orderNext').click();assert.match(await page.locator('#confirmOrderText').innerText(),/Delivery fee: To be confirmed and added in Messenger/);
 await page.locator('#orderBack').click();await page.locator('#fulfillment').selectOption('Pickup');
 await page.locator('#orderNext').click();assert.match(await page.locator('#confirmOrderText').innerText(),/Service: Pickup/);
 await page.evaluate(()=>hideOrder());
