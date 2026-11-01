@@ -6,6 +6,9 @@ const model = BBSILOGReviewModel;
 let token = sessionStorage.getItem('bbsilog_feedback_token') || null;
 let feedbackRows = [];
 let currentFilter = 'all';
+let pendingDeletion = null;
+let deleteReturnFocus = null;
+const deleteDialog = document.getElementById('deleteFeedbackDialog');
 const status = document.getElementById('status');
 function say(message, error = false) {
   status.textContent = message;
@@ -48,8 +51,10 @@ function render() {
     filters.append(button);
   }
   const list = document.getElementById('list');
+  document.getElementById('archiveNotice').hidden = currentFilter !== 'archived';
   list.replaceChildren();
   const rows = feedbackRows.filter(row => model.matchesFilter(row, currentFilter));
+  if (currentFilter === 'archived') rows.sort((a, b) => new Date(b.archived_at) - new Date(a.archived_at) || b.id - a.id);
   if (!rows.length) { list.textContent = 'No feedback in this category.'; return; }
   for (const row of rows) {
     const card = document.createElement('article');
@@ -109,6 +114,7 @@ function render() {
       ? (row.owner_publication_approved ? 'Messenger screenshot · Publication approved by BBSILOG owner' : 'Messenger screenshot · Publication not approved')
       : (row.publish_consent ? 'Website feedback · Customer permission: Yes' : 'Private website feedback · No permission to feature');
     detail.textContent = publication + ' · ' + (row.archived_at ? 'archived' : row.status) + ' · ' + (model.isImported(row) ? 'Imported: ' : 'Submitted: ') + new Date(row.created_at).toLocaleString();
+    if (row.archived_at) detail.textContent += ' · Archived: ' + new Date(row.archived_at).toLocaleString();
     if (row.source_reference) detail.title = row.source_reference;
     card.append(title, nameEditor);
     if (row.photo_path) {
@@ -144,11 +150,56 @@ function render() {
     const archive = document.createElement('button');
     archive.className = 'danger';
     archive.textContent = row.archived_at ? 'Restore feedback' : 'Move to archive';
-    archive.addEventListener('click', () => updateFeedback(row, { archived_at: row.archived_at ? null : new Date().toISOString(), status: 'pending' }, archive));
+    archive.addEventListener('click', () => updateFeedback(row, { archived_at: row.archived_at ? null : new Date().toISOString(), status: 'pending' }, archive, row.archived_at ? 'Feedback restored to Pending.' : 'Feedback archived. Only the newest 50 archived entries are kept.'));
     card.append(archive);
+    if (row.archived_at) {
+      const remove = document.createElement('button');
+      remove.type = 'button';
+      remove.className = 'danger';
+      remove.textContent = 'Delete permanently';
+      remove.addEventListener('click', () => {
+        pendingDeletion = row;
+        deleteReturnFocus = remove;
+        document.getElementById('deleteFeedbackPreview').textContent = (row.customer_name || 'Unnamed customer') + ' — ' + row.message;
+        document.getElementById('deleteFeedbackError').textContent = '';
+        deleteDialog.showModal();
+        document.getElementById('cancelDeleteFeedback').focus();
+      });
+      card.append(remove);
+    }
     list.append(card);
   }
 }
+deleteDialog.addEventListener('close', () => {
+  pendingDeletion = null;
+  if (deleteReturnFocus?.isConnected) deleteReturnFocus.focus();
+});
+document.getElementById('cancelDeleteFeedback').addEventListener('click', () => deleteDialog.close());
+document.getElementById('confirmDeleteFeedback').addEventListener('click', async event => {
+  if (!pendingDeletion || !token) return;
+  const button = event.currentTarget;
+  button.disabled = true;
+  document.getElementById('cancelDeleteFeedback').disabled = true;
+  // Keep the confirmation open until the request finishes.
+  const preventCancel = event => event.preventDefault();
+  deleteDialog.addEventListener('cancel', preventCancel);
+  try {
+    const removed = await request('/rest/v1/rpc/bbsilog_delete_archived_feedback', {
+      method: 'POST', body: JSON.stringify({ p_id: pendingDeletion.id, p_confirmation: 'DELETE' })
+    });
+    if (removed !== true) throw Error('Could not delete this feedback. Refresh and try again.');
+    deleteDialog.close();
+    await load();
+    say('Archived feedback permanently deleted. Reward verification history was kept.');
+    document.querySelector('#filters button.active')?.focus();
+  } catch (error) {
+    document.getElementById('deleteFeedbackError').textContent = error.message;
+  } finally {
+    button.disabled = false;
+    document.getElementById('cancelDeleteFeedback').disabled = false;
+    deleteDialog.removeEventListener('cancel', preventCancel);
+  }
+});
 async function load() {
   say('Loading feedback…');
   try {

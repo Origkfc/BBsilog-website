@@ -142,3 +142,13 @@ Changing the order or details invalidates the copied summary. Messenger unlocks 
 Focused browser check: `node tests/delivery-messenger-browser.cjs` (set `PLAYWRIGHT_MODULE` if needed).
 
 Follow BBSILOG updates now live in the footer. Limited Edition cards animate once on first scroll into view; reduced-motion visitors get no reveal animation. The approved groupie photo for feedback record 32 was enabled after the owner confirmed customer permission; no other photo permissions were changed.
+
+### Feedback archive retention — November 1, 2026
+
+Deleted / Archived keeps the 50 most recently archived feedback entries, sorted by archive date and then ID. Archiving a 51st entry automatically and permanently removes the oldest archive entry in the same database transaction. Active feedback is not pruned. Restore returns an existing archived entry to Pending; deleted entries cannot be restored.
+
+Each archived card also has **Delete permanently**. A themed confirmation dialog identifies the entry and explains that deletion cannot be undone. Cancel and Escape leave it unchanged. Only an authorized feedback admin can delete an archived entry; visitors cannot submit already-archived feedback to force eviction.
+
+The applied schema change is recorded in `database/feedback-archive-retention.sql`. Private pitcher records retain the mobile number, claim history and a verification snapshot when their linked feedback is removed. QR verification and the one-reward-per-mobile rule continue to work; this snapshot is never a public review. This deletes the feedback record, not the underlying private Storage object.
+
+`database/verify-feedback-archive-retention.sql` tests the 50/51 boundary, active-row preservation, confirmation, restore, real API-role permissions and reward verification/one-use behavior in a rolled-back transaction. `node tests/feedback-archive-browser.cjs` tests the confirmation dialog, cancel, server errors, retry, restore and responsive layout using browser-only fixtures.
