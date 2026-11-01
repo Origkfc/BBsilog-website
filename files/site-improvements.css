@@ -38,3 +38,30 @@
 .hero-visuals-idle #home *, .hero-visuals-idle #home::before,.hero-visuals-idle #home::after { animation-play-state: paused !important; }
 @media(max-width:600px) { .limited-grid { grid-template-columns: 1fr; gap: 20px; } .limited-copy { padding: 20px; } .limited-photo { aspect-ratio: 1.6; } .limited-stamp { top: 12px; left: 12px; } .order .smoothie-size-options { gap: 7px; } .smoothie-size-choice>span { min-width: 65px; padding: 6px 9px; } .connection-notice { top: 64px; right: 16px; } }
 @media(prefers-reduced-motion:reduce) { .limited-stamp { transform: none; } }
+
+/* A compact map beside the address, with one clear way to open directions. */
+#about .visit-location { display: grid; grid-template-columns: 180px minmax(0,1fr); gap: 18px; align-items: center; }
+.visit-map { overflow: hidden; border: 1px solid #e2bc70; border-radius: 13px; background: #fff0bd; }
+.visit-map iframe { display: block; width: 100%; height: 140px; border: 0; background: #f5e7c7; }
+.visit-map>a { display: flex; min-height: 36px; align-items: center; justify-content: center; padding: 5px 8px; color: #63320d; font-size: 11px; font-weight: 700; background: #ffe8a2; }
+.visit-map>a:hover { background: #ffda6a; }
+.visit-address { min-width: 0; }
+.visit-address b { font-size: 15px; }
+.visit-address p { margin: 7px 0 0; font-size: 13px; line-height: 1.75; color: #70401d; }
+#about .about-contact-actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin: 20px 0 0; }
+.contact-number { margin: 0; font-size: 14px; color: #6c411e; }
+.contact-number strong { color: #35180b; white-space: nowrap; }
+.contact-whatsapp { display: inline-flex; justify-content: center; align-items: center; min-height: 44px; padding: 10px 18px; border: 1px solid #e7a625; border-radius: 24px; background: linear-gradient(115deg,#ffe778,#ffbd18); color: #35180b; font-size: 13px; font-weight: 700; }
+.contact-whatsapp:hover { background: #ffcf39; }
+.site-footer .footer-inner { display: grid; grid-template-columns: 1.1fr 1.1fr 1fr; align-items: center; gap: 32px; padding-bottom: 28px; }
+.footer-brand img { display: block; width: 160px; height: auto; }
+.site-footer .footer-brand p { margin: 15px 0 0; font-size: 18px; }
+.site-footer .footer-location { font-size: 18px; line-height: 1.6; }
+.footer-location p { margin: 0 0 12px; }
+.site-footer .footer-page { justify-self: start; font-size: 19px; line-height: 1.4; min-height: 44px; display: inline-flex; align-items: center; border-bottom: 1px solid #c68f2d; }
+.site-footer .footer-credit { border-top: 1px solid #bf81232b; padding-top: 18px; display: flex; justify-content: flex-end; }
+.creator-credit { display: inline-flex; align-items: center; gap: 10px; color: #81562a; font: 11px/1.5 'DM Sans',sans-serif; letter-spacing: .2px; }
+.creator-mark { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: #3a1c0d; color: #ffd03b; font-size: 20px; box-shadow: 3px 3px 0 #efb82e; }
+.creator-credit strong { margin-left: 4px; color: #45210c; font: 800 14px 'DM Sans',sans-serif; letter-spacing: -.3px; }
+@media(max-width:800px) { .site-footer .footer-inner { grid-template-columns: 1fr; gap: 24px; } .site-footer .footer-credit { justify-content: flex-start; } }
+@media(max-width:480px) { #about .visit-location { grid-template-columns: 1fr; gap: 14px; } .visit-map iframe { height: 155px; } .visit-address p { font-size: 14px; } #about .about-contact-actions { gap: 12px; } .contact-number { font-size: 13px; } .contact-whatsapp { padding: 10px 15px; } }
