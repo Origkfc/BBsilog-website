@@ -24,5 +24,7 @@ Shared prompt: Single photorealistic illustrative restaurant menu product photo.
 - extra-gravy: Only one small plain white dipping cup filled with creamy light brown gravy. No plate of food, no meat, no rice.
 - extra-spam-two: Exactly TWO pan-fried Spam-style pork luncheon meat slices, rounded rectangular shape with browned edges and pinkish centers, slightly overlapping on a small white plate. Only two slices, NO bone, no rice, no egg, no bun.
 - burger-spaghetti-rice: Edit the existing spaghetti and burger steak photo to add a modest dome of plain rice alongside both items, preserving the plate, food, cream background, and realistic style.
-- sizzling-double-decker: Two slightly stacked burger patties with mushroom gravy, java rice, and vegetables on an oval sizzling plate. This serving composition is an explicitly stated assumption pending owner confirmation.
+- sizzling-double-decker: Two slightly stacked burger patties with mushroom gravy, java rice, and vegetables on an oval sizzling plate. Initial illustrative composition, subsequently corrected after owner confirmation.
 
+
+- sizzling-double-decker-cheese: Edit the original illustration to show exactly two stacked burger patties with clearly visible melted yellow cheese between them, topped with gravy and served with java rice. Remove the vegetables. Preserve cream tabletop, full sizzling plate, wooden trivet, realistic lighting, and square composition. Serving confirmed by the owner.

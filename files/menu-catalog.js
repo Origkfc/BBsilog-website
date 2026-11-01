@@ -1128,10 +1128,10 @@ const products=[
   {
     "name": "Sizzling Double Decker",
     "price": 120,
-    "img": "menu-images/sizzling-double-decker",
+    "img": "menu-images/sizzling-double-decker-cheese",
     "cat": "Sizzling plates",
     "tag": "",
-    "desc": "Sizzling Double Decker served on a hot plate.",
+    "desc": "Two burger patties with cheese between them, gravy, and java rice.",
     "illustrative": true
   },
   {
