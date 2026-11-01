@@ -69,7 +69,7 @@ assert.deepEqual(errors,[]);console.log('PASS: special prices/photos, radio size
 // Browser connection hint produces the themed weak-connection state.
 const slow=await browser.newPage();await slow.addInitScript(()=>Object.defineProperty(navigator,'connection',{value:{effectiveType:'2g',downlink:.3,addEventListener(){}}}));
 await slow.route('https://ufhblydcgwffwpwdlksm.supabase.co/**',r=>r.fulfill({status:200,contentType:'application/json',body:'[]'}));
-await slow.goto(url,{waitUntil:'domcontentloaded'});await slow.waitForTimeout(400);assert.match(await slow.locator('.connection-notice').innerText(),/connection seems slow/);await slow.close();
+await slow.goto(url,{waitUntil:'domcontentloaded'});await slow.waitForFunction(()=>document.querySelector('.connection-notice')?.dataset.state==='weak',{},{timeout:12000});assert.match(await slow.locator('.connection-notice').innerText(),/connection seems slow/);await slow.close();
 
 const reviews=await browser.newPage({viewport:{width:390,height:844}});
 const rows=Array.from({length:8},(_,i)=>({id:100+i,customer_name:'Browser Test '+i,rating:5,message:'Browser-only fixture for checking scrolling and resume behavior.',source:'website',photo_consent:false}));
