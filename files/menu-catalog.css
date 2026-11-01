@@ -7,3 +7,20 @@
 
 .food-pack-card .food-pack-price{font-size:20px;font-weight:800;color:#713500;margin-top:13px;line-height:1.3}
 #about .actions .view{min-height:44px;display:inline-flex;align-items:center}
+#about .split{align-items:start}
+#about .split>div{min-width:0}
+#about .about-photo{margin:0;position:sticky;top:88px}
+#about .about-photo .store-img{display:block;width:100%}
+#about h2{font-size:clamp(30px,3.2vw,42px);line-height:1.15;text-wrap:balance}
+#about .about-story-copy{margin:22px 0 26px}
+#about .about-story-copy p{font-size:14px;line-height:1.85;margin:0 0 17px}
+#about .about-story-copy p:last-child{margin-bottom:0}
+#about .about-contact-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;justify-content:stretch;align-items:stretch;margin:24px 0 0}
+#about .contact-link{display:flex;align-items:center;justify-content:center;gap:6px;min-height:48px;min-width:0;padding:12px 14px;border:1px solid #e4ba68;border-radius:13px;background:#fff1ca;color:#542a0c;font-size:13px;font-weight:700;line-height:1.4;text-align:center;text-decoration:none}
+#about .contact-link:hover{background:#ffe19a;border-color:#bd761b}
+#about .contact-link:focus-visible{outline:3px solid #9a4a0a;outline-offset:3px}
+#about .contact-map{background:linear-gradient(115deg,#ffd32b,#ffad08);border-color:#edac1e}
+#about .contact-phone{grid-column:1/-1;background:#35180b;color:#fff1c9;border-color:#35180b}
+#about .contact-phone:hover{background:#583014;color:#fff7dd}
+#about .contact-phone span{white-space:nowrap}
+@media(max-width:800px){#about .about-photo{position:static}#about .about-story-copy p{font-size:15px;line-height:1.8}#about .about-contact-actions{max-width:none}#about .contact-link{min-height:48px;font-size:14px}}
